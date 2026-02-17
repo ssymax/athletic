@@ -96,7 +96,7 @@ export default function CheckInPage() {
                                                 <p className="font-medium text-sm">{m.type.name}</p>
                                                 <p className="text-xs text-muted">
                                                     {m.type.type === 'TIME'
-                                                        ? `Ważny do: ${new Date(m.endDate).toLocaleDateString()}`
+                                                        ? `Ważny do: ${m.endDate ? new Date(m.endDate).toLocaleDateString() : "-"}`
                                                         : `Pozostało wejść: ${m.remainingEntries}`}
                                                 </p>
                                             </div>

@@ -5,7 +5,7 @@ import { revalidatePath } from 'next/cache'
 
 function pickPrimaryMembershipForList(memberships: {
     id: string
-    type: { type: string }
+    type: { type: string; name: string }
     startDate: Date
     endDate: Date | null
     remainingEntries: number | null
