@@ -1,0 +1,107 @@
+// This is your Prisma schema file.
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id        String   @id @default(uuid())
+  username  String   @unique
+  password  String
+  role      String   @default("RECEPTION") // ADMIN, RECEPTION
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model Member {
+  id          String       @id @default(uuid())
+  firstName   String
+  lastName    String
+  phoneNumber String       @unique
+  notes       String?
+  active      Boolean      @default(true)
+  createdAt   DateTime     @default(now())
+  updatedAt   DateTime     @updatedAt
+  memberships Membership[]
+}
+
+model MembershipType {
+  id          String   @id @default(uuid())
+  name        String
+  scope       String // GYM, CLASSES, ALL
+  type        String // TIME, ENTRY
+  daysValid   Int? // For TIME based
+  entries     Int? // For ENTRY based
+  price       Float
+  active      Boolean  @default(true)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  memberships Membership[]
+}
+
+model Membership {
+  id               String            @id @default(uuid())
+  memberId         String
+  member           Member            @relation(fields: [memberId], references: [id])
+  typeId           String
+  type             MembershipType    @relation(fields: [typeId], references: [id])
+  purchaseDate     DateTime          @default(now())
+  startDate        DateTime
+  endDate          DateTime?
+  remainingEntries Int?
+  status           String // ACTIVE, EXPIRED, CANCELLED
+  paymentMethod    String // CASH, CARD
+  pricePaid        Float
+  note             String?
+  createdAt        DateTime          @default(now())
+  updatedAt        DateTime          @updatedAt
+  history          MembershipHistory[]
+}
+
+model MembershipHistory {
+  id           String     @id @default(uuid())
+  membershipId String
+  membership   Membership @relation(fields: [membershipId], references: [id])
+  action       String // PURCHASE, EXTEND, FREEZE, UNFREEZE, USE_ENTRY, EXPIRE, CANCEL, EDIT
+  date         DateTime   @default(now())
+  details      String?
+}
+
+model Product {
+  id        String     @id @default(uuid())
+  name      String
+  category  String // DRINKS, SUPPLEMENTS
+  price     Float
+  active    Boolean    @default(true)
+  stock     Int        @default(0)
+  createdAt DateTime   @default(now())
+  updatedAt DateTime   @updatedAt
+  saleItems SaleItem[]
+}
+
+model Sale {
+  id            String     @id @default(uuid())
+  date          DateTime   @default(now())
+  paymentMethod String // CASH, CARD
+  totalAmount   Float
+  note          String?
+  items         SaleItem[]
+  createdAt     DateTime   @default(now())
+  updatedAt     DateTime   @updatedAt
+}
+
+model SaleItem {
+  id        String  @id @default(uuid())
+  saleId    String
+  sale      Sale    @relation(fields: [saleId], references: [id])
+  productId String
+  product   Product @relation(fields: [productId], references: [id])
+  quantity  Int
+  unitPrice Float
+  total     Float
+}
