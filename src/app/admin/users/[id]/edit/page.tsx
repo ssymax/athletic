@@ -4,21 +4,21 @@ import { getUserById } from "@/app/actions/users";
 import EditUserForm from "./EditUserForm";
 
 export default async function EditUserPage({
-    params,
+  params,
 }: {
-    params: Promise<{ id: string }>;
+  params: Promise<{ id: string }>;
 }) {
-    const session = await auth();
-    if (session?.user?.role !== "ADMIN") {
-        redirect("/dashboard");
-    }
+  const session = await auth();
+  if (session?.user?.role !== "ADMIN") {
+    redirect("/dashboard");
+  }
 
-    const { id } = await params;
-    const user = await getUserById(id);
+  const { id } = await params;
+  const user = await getUserById(id);
 
-    if (!user) {
-        notFound();
-    }
+  if (!user) {
+    notFound();
+  }
 
-    return <EditUserForm user={user} />;
+  return <EditUserForm user={user} />;
 }

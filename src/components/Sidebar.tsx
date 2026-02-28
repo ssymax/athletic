@@ -1,7 +1,7 @@
-'use client';
+"use client";
 
-import Link from 'next/link';
-import { usePathname } from 'next/navigation';
+import Link from "next/link";
+import { usePathname } from "next/navigation";
 
 interface SidebarProps {
   userName?: string | null;
@@ -9,38 +9,38 @@ interface SidebarProps {
 }
 
 function getInitials(name?: string | null) {
-  if (!name) return '??';
+  if (!name) return "??";
   const initials = name
-    .split(' ')
+    .split(" ")
     .filter(Boolean)
     .map((part) => part[0])
-    .join('')
+    .join("")
     .toUpperCase();
-  return initials.slice(0, 2) || '??';
+  return initials.slice(0, 2) || "??";
 }
 
 function getRoleLabel(role?: string | null) {
-  if (role === 'ADMIN') return 'Administrator';
-  if (role === 'RECEPTION') return 'Recepcjonista';
-  return 'Użytkownik';
+  if (role === "ADMIN") return "Administrator";
+  if (role === "RECEPTION") return "Recepcjonista";
+  return "Użytkownik";
 }
 
 export function Sidebar({ userName, userRole }: SidebarProps) {
   const pathname = usePathname();
-  const isAdmin = userRole === 'ADMIN';
+  const isAdmin = userRole === "ADMIN";
 
   const links = [
-    { href: '/dashboard', label: 'Panel', icon: '📊' },
-    { href: '/checkin', label: 'Wejście', icon: '✅' },
-    { href: '/members', label: 'Klubowicze', icon: '👥' },
-    { href: '/pos', label: 'Sprzedaż', icon: '🛒' },
+    { href: "/dashboard", label: "Panel", icon: "📊" },
+    { href: "/checkin", label: "Wejście", icon: "✅" },
+    { href: "/members", label: "Klubowicze", icon: "👥" },
+    { href: "/pos", label: "Sprzedaż", icon: "🛒" },
   ];
 
   const adminLinks = [
-    { href: '/products', label: 'Magazyn', icon: '📦' },
-    { href: '/admin/memberships', label: 'Karnety', icon: '🎫' },
-    { href: '/reports', label: 'Raporty', icon: '📈' },
-    { href: '/admin/users', label: 'Użytkownicy', icon: '👤' },
+    { href: "/products", label: "Magazyn", icon: "📦" },
+    { href: "/admin/memberships", label: "Karnety", icon: "🎫" },
+    { href: "/reports", label: "Raporty", icon: "📈" },
+    { href: "/admin/users", label: "Użytkownicy", icon: "👤" },
   ];
 
   return (
@@ -57,7 +57,7 @@ export function Sidebar({ userName, userRole }: SidebarProps) {
             <Link
               key={link.href}
               href={link.href}
-              className={`nav-link ${isActive ? 'active' : ''}`}
+              className={`nav-link ${isActive ? "active" : ""}`}
             >
               <span className="nav-icon">{link.icon}</span>
               <span className="font-medium">{link.label}</span>
@@ -77,7 +77,7 @@ export function Sidebar({ userName, userRole }: SidebarProps) {
                 <Link
                   key={link.href}
                   href={link.href}
-                  className={`nav-link nav-link-sub ${isActive ? 'active' : ''}`}
+                  className={`nav-link nav-link-sub ${isActive ? "active" : ""}`}
                 >
                   <span className="nav-icon">{link.icon}</span>
                   <span className="font-medium">{link.label}</span>
@@ -94,14 +94,14 @@ export function Sidebar({ userName, userRole }: SidebarProps) {
             <div className="avatar">{getInitials(userName)}</div>
             <div className="w-full">
               <p className="text-sm font-medium text-white text-ellipsis">
-                {userName || 'Nieznany użytkownik'}
+                {userName || "Nieznany użytkownik"}
               </p>
               <p className="text-xs text-muted">{getRoleLabel(userRole)}</p>
             </div>
           </div>
           <form
             action={async () => {
-              const { logout } = await import('@/app/actions/auth');
+              const { logout } = await import("@/app/actions/auth");
               await logout();
             }}
           >

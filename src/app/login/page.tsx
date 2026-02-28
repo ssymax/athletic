@@ -1,7 +1,7 @@
-'use client';
+"use client";
 
-import { useState } from 'react';
-import { login } from '@/app/actions/auth';
+import { useState } from "react";
+import { login } from "@/app/actions/auth";
 
 export default function LoginPage() {
   const [error, setError] = useState<string | null>(null);
@@ -55,7 +55,7 @@ export default function LoginPage() {
             className="btn btn-primary btn-full"
             disabled={loading}
           >
-            {loading ? 'Logowanie...' : 'Zaloguj się'}
+            {loading ? "Logowanie..." : "Zaloguj się"}
           </button>
         </form>
 
