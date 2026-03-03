@@ -4,6 +4,10 @@ Reception system for a gym/fitness club, built with Next.js, NextAuth, and Prism
 
 Originally built as a one-day project.
 
+## Production Status
+
+This project is also running in production and is actively used by the real Athletic Fitness Club in Olsztyn, Poland. The club owner reduced software costs, and the developer gets a free gym membership.
+
 ## Current Scope
 
 - Credential-based login (`ADMIN`, `RECEPTION`)
@@ -77,12 +81,43 @@ Local seed users:
 - `admin` / `adminpassword` (`ADMIN`)
 - `recepcja` / `password123` (`RECEPTION`)
 
+## Testing
+
+Tests are written with [Vitest](https://vitest.dev/) and cover the server action layer (business logic, validation, RBAC). All external dependencies — Prisma, NextAuth, and Next.js cache — are mocked so tests run without a database or Next.js runtime.
+
+### Running tests
+
+```bash
+# Run all tests once
+npm test
+
+# Watch mode (re-runs on file changes)
+npm run test:watch
+
+# With coverage report
+npm run test:coverage
+```
+
+### Test files
+
+| File                                    | Covers                                                       |
+| --------------------------------------- | ------------------------------------------------------------ |
+| `src/__tests__/members.test.ts`         | Member CRUD, primary membership selection logic              |
+| `src/__tests__/checkin.test.ts`         | Check-in search, visit registration (TIME / ENTRY / expired) |
+| `src/__tests__/memberships.test.ts`     | Membership sale, endDate / entry calculation, history record |
+| `src/__tests__/pos.test.ts`             | Sale processing, total calculation, stock decrement          |
+| `src/__tests__/users.test.ts`           | User CRUD, role validation, password hashing, RBAC guard     |
+| `src/__tests__/membershipTypes.test.ts` | Membership type creation / deletion, RBAC guard              |
+
 ## Scripts
 
 - `npm run dev` - start development server
 - `npm run build` - `prisma generate` + `next build`
 - `npm run start` - start production server
 - `npm run lint` - run ESLint
+- `npm run test` - run tests
+- `npm run test:watch` - run tests in watch mode
+- `npm run test:coverage` - run tests with coverage report
 - `npm run db:migrate:deploy` - apply Prisma migrations
 - `npm run vercel-build` - `prisma migrate deploy` + `prisma generate` + `next build`
 
@@ -98,10 +133,6 @@ To sync Vercel env vars locally:
 ```bash
 vercel env pull .env.development.local
 ```
-
-## Production Status
-
-This project is also running in production and is actively used by the real Athletic Fitness Club in Olsztyn, Poland. The club owner reduced software costs, and the developer gets a free gym membership.
 
 ## Notes
 
