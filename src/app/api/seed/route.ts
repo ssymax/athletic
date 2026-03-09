@@ -3,6 +3,10 @@ import { NextResponse } from "next/server";
 import bcrypt from "bcryptjs";
 
 export async function GET() {
+  if (process.env.NODE_ENV === "production") {
+    return NextResponse.json({ error: "Not available in production" }, { status: 403 });
+  }
+
   try {
     // Check if data exists - let's find user 'admin' specifically
     const adminUser = await prisma.user.findUnique({
@@ -10,26 +14,13 @@ export async function GET() {
     });
 
     if (adminUser) {
-      // Update passwords to be hashed if we are re-seeding or just ensure they are hashed
-      const hashedAdmin = await bcrypt.hash("adminpassword", 10);
-      const hashedReception = await bcrypt.hash("password123", 10);
-
-      await prisma.user.update({
-        where: { username: "admin" },
-        data: { password: hashedAdmin },
-      });
-      await prisma.user.update({
-        where: { username: "recepcja" },
-        data: { password: hashedReception },
-      });
-
       return NextResponse.json({
-        message: "Users updated with hashed passwords",
+        message: "Database already seeded",
       });
     }
 
-    const hashedPassword = await bcrypt.hash("password123", 10);
-    const hashedAdminPassword = await bcrypt.hash("adminpassword", 10);
+    const hashedPassword = await bcrypt.hash("recepcja_dev_2024", 10);
+    const hashedAdminPassword = await bcrypt.hash("admin_dev_2024", 10);
 
     // Create Membership Types
     await prisma.membershipType.createMany({

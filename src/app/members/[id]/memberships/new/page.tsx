@@ -25,6 +25,7 @@ export default function NewMembershipPage({
     null,
   );
   const [selectedType, setSelectedType] = useState<string>("");
+  const [discount, setDiscount] = useState<number>(0);
 
   useEffect(() => {
     params.then(setUnwrappedParams);
@@ -116,8 +117,15 @@ export default function NewMembershipPage({
                 <strong>Ważność:</strong>{" "}
                 {selectedTypeData.type === "TIME"
                   ? `${selectedTypeData.daysValid} dni`
-                  : `${selectedTypeData.entries} wejść`}
+                  : `${selectedTypeData.entries} wejść${selectedTypeData.daysValid ? ` lub ${selectedTypeData.daysValid} dni` : ""}`}
               </p>
+              {discount > 0 && (
+                <p className="text-green-700 font-semibold">
+                  <strong>Do zapłaty:</strong>{" "}
+                  {Math.max(0, selectedTypeData.price - discount).toFixed(2)} PLN
+                  (rabat: {discount.toFixed(2)} PLN)
+                </p>
+              )}
             </div>
           )}
 
@@ -132,6 +140,23 @@ export default function NewMembershipPage({
               className="input"
               defaultValue={new Date().toISOString().split("T")[0]}
               required
+            />
+          </div>
+
+          <div className="form-group">
+            <label htmlFor="discount" className="label">
+              Rabat (PLN)
+            </label>
+            <input
+              type="number"
+              id="discount"
+              name="discount"
+              className="input"
+              min="0"
+              step="0.01"
+              value={discount}
+              onChange={(e) => setDiscount(parseFloat(e.target.value) || 0)}
+              placeholder="0.00"
             />
           </div>
 

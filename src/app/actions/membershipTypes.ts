@@ -46,6 +46,8 @@ export async function createMembershipType(formData: FormData) {
     throw new Error("Entry-based memberships require number of entries");
   }
 
+  // daysValid for ENTRY type is optional (time limit alongside entry count)
+
   await prisma.membershipType.create({
     data: {
       name,
