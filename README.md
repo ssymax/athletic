@@ -22,15 +22,6 @@ This project is also running in production and is actively used by the real Athl
 - Sales and membership reports (admin-only)
 - User management (admin-only)
 
-## Changelog
-
-### v1.1.0
-
-- **Rabat przy sprzedaży karnetu** — `Klienci` → wybierz klienta → `Sprzedaj karnet` → pole `Rabat (PLN)`; cena końcowa aktualizuje się na bieżąco.
-- **Edycja zakupionego karnetu** — `Klienci` → wybierz klienta → wiersz karnetu → przycisk `Edytuj` w ostatniej kolumnie.
-- **Limit czasowy dla karnetów wejściowych** — `Admin` → `Karnety` → `Nowy typ karnetu` → typ `Wejściowy` → opcjonalne pole `Limit dni`.
-- **Wyszukiwanie po imieniu i nazwisku** — na stronie `Klienci` i na ekranie check-in działa bez rozróżniania wielkości liter, w dowolnej kolejności (np. `kowalski jan` lub `Jan Kowalski`).
-
 ## Tech Stack
 
 - Next.js 15 (App Router)
