@@ -27,12 +27,12 @@ describe("findMemberForCheckin", () => {
       expect.objectContaining({
         where: {
           OR: [
-            { phoneNumber: { contains: "Anna" } },
-            { lastName: { contains: "Anna" } },
+            { phoneNumber: { contains: "Anna", mode: "insensitive" } },
+            { firstName: { contains: "Anna", mode: "insensitive" } },
+            { lastName: { contains: "Anna", mode: "insensitive" } },
           ],
           active: true,
         },
-        take: 5,
       }),
     );
   });

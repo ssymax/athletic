@@ -63,7 +63,7 @@ describe("getMembers", () => {
     await getMembers("Anna");
     const call = prismaMock.member.findMany.mock.calls[0][0];
     expect(call.where.OR).toHaveLength(3);
-    expect(call.where.OR[0]).toEqual({ firstName: { contains: "Anna" } });
+    expect(call.where.OR[0]).toEqual({ firstName: { contains: "Anna", mode: "insensitive" } });
   });
 
   it("attaches primaryMembership: null when no memberships", async () => {
