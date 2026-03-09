@@ -93,19 +93,34 @@ export default function NewMembershipTypeForm() {
               />
             </div>
           ) : (
-            <div className="form-group">
-              <label htmlFor="entries" className="label">
-                Liczba wejść
-              </label>
-              <input
-                type="number"
-                id="entries"
-                name="entries"
-                required
-                min="1"
-                className="input"
-              />
-            </div>
+            <>
+              <div className="form-group">
+                <label htmlFor="entries" className="label">
+                  Liczba wejść
+                </label>
+                <input
+                  type="number"
+                  id="entries"
+                  name="entries"
+                  required
+                  min="1"
+                  className="input"
+                />
+              </div>
+              <div className="form-group">
+                <label htmlFor="daysValid" className="label">
+                  Limit dni ważności (opcjonalnie)
+                </label>
+                <input
+                  type="number"
+                  id="daysValid"
+                  name="daysValid"
+                  min="1"
+                  className="input"
+                  placeholder="np. 30 — karnet wygaśnie też po tym czasie"
+                />
+              </div>
+            </>
           )}
 
           <div className="form-group">

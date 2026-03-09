@@ -49,9 +49,51 @@ export async function getMembers(query?: string) {
   const where = query
     ? {
         OR: [
-          { firstName: { contains: query } },
-          { lastName: { contains: query } },
-          { phoneNumber: { contains: query } },
+          { firstName: { contains: query, mode: "insensitive" as const } },
+          { lastName: { contains: query, mode: "insensitive" as const } },
+          { phoneNumber: { contains: query, mode: "insensitive" as const } },
+          // Search by full name "Jan Kowalski" or "kowalski jan"
+          ...(query.includes(" ")
+            ? (() => {
+                const parts = query.trim().split(/\s+/);
+                const first = parts[0];
+                const last = parts.slice(1).join(" ");
+                return [
+                  {
+                    AND: [
+                      {
+                        firstName: {
+                          contains: first,
+                          mode: "insensitive" as const,
+                        },
+                      },
+                      {
+                        lastName: {
+                          contains: last,
+                          mode: "insensitive" as const,
+                        },
+                      },
+                    ],
+                  },
+                  {
+                    AND: [
+                      {
+                        firstName: {
+                          contains: last,
+                          mode: "insensitive" as const,
+                        },
+                      },
+                      {
+                        lastName: {
+                          contains: first,
+                          mode: "insensitive" as const,
+                        },
+                      },
+                    ],
+                  },
+                ];
+              })()
+            : []),
         ],
       }
     : {};

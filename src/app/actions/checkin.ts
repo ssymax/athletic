@@ -4,12 +4,35 @@ import prisma from "@/lib/db";
 import { revalidatePath } from "next/cache";
 
 export async function findMemberForCheckin(query: string) {
+  const orConditions: object[] = [
+    { phoneNumber: { contains: query, mode: "insensitive" } },
+    { firstName: { contains: query, mode: "insensitive" } },
+    { lastName: { contains: query, mode: "insensitive" } },
+  ];
+
+  if (query.includes(" ")) {
+    const parts = query.trim().split(/\s+/);
+    const first = parts[0];
+    const last = parts.slice(1).join(" ");
+    orConditions.push(
+      {
+        AND: [
+          { firstName: { contains: first, mode: "insensitive" } },
+          { lastName: { contains: last, mode: "insensitive" } },
+        ],
+      },
+      {
+        AND: [
+          { firstName: { contains: last, mode: "insensitive" } },
+          { lastName: { contains: first, mode: "insensitive" } },
+        ],
+      },
+    );
+  }
+
   return await prisma.member.findMany({
     where: {
-      OR: [
-        { phoneNumber: { contains: query } },
-        { lastName: { contains: query } },
-      ],
+      OR: orConditions,
       active: true,
     },
     include: {

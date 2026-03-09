@@ -88,13 +88,14 @@ export default async function MemberDetailsPage({
                     <th>Ważność</th>
                     <th>Status</th>
                     <th>Cena</th>
+                    <th></th>
                   </tr>
                 </thead>
                 <tbody>
                   {member.memberships.length === 0 ? (
                     <tr>
                       <td
-                        colSpan={5}
+                        colSpan={6}
                         className="text-center py-4 text-muted-foreground"
                       >
                         Brak historii karnetów.
@@ -123,7 +124,18 @@ export default async function MemberDetailsPage({
                                 : "?"}
                             </>
                           ) : (
-                            <>{membership.remainingEntries} wejść</>
+                            <>
+                              {membership.remainingEntries} wejść
+                              {membership.endDate && (
+                                <span className="text-muted-foreground text-xs ml-1">
+                                  (do{" "}
+                                  {new Date(
+                                    membership.endDate,
+                                  ).toLocaleDateString("pl-PL")}
+                                  )
+                                </span>
+                              )}
+                            </>
                           )}
                         </td>
                         <td>
@@ -134,6 +146,14 @@ export default async function MemberDetailsPage({
                           </span>
                         </td>
                         <td>{membership.pricePaid.toFixed(2)} zł</td>
+                        <td>
+                          <Link
+                            href={`/members/${id}/memberships/${membership.id}/edit`}
+                            className="text-primary text-sm font-medium"
+                          >
+                            Edytuj
+                          </Link>
+                        </td>
                       </tr>
                     ))
                   )}
