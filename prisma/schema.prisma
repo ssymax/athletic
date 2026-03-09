@@ -35,7 +35,7 @@ model MembershipType {
   name        String
   scope       String // GYM, CLASSES, ALL
   type        String // TIME, ENTRY
-  daysValid   Int? // For TIME based
+  daysValid   Int? // For TIME based, or optional time limit for ENTRY based
   entries     Int? // For ENTRY based
   price       Float
   active      Boolean  @default(true)

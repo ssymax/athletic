@@ -13,11 +13,23 @@ This project is also running in production and is actively used by the real Athl
 - Credential-based login (`ADMIN`, `RECEPTION`)
 - Member management (create, edit, deactivate, delete)
 - Membership sales (time-based and entry-based)
+  - **Discount** — enter a PLN discount amount when selling a membership; the final price is shown in real time
+  - **Edit purchased membership** — change dates, remaining entries, status, price, payment method, and notes on any existing membership
+  - **Time limit for entry-based memberships** — optionally set a day limit alongside entry count (e.g. 12 entries *or* 30 days, whichever comes first)
 - Check-in flow with membership validation
 - POS sales for products with stock updates
 - Admin inventory management
 - Sales and membership reports (admin-only)
 - User management (admin-only)
+
+## Changelog
+
+### v1.1.0
+
+- **Rabat przy sprzedaży karnetu** — `Klienci` → wybierz klienta → `Sprzedaj karnet` → pole `Rabat (PLN)`; cena końcowa aktualizuje się na bieżąco.
+- **Edycja zakupionego karnetu** — `Klienci` → wybierz klienta → wiersz karnetu → przycisk `Edytuj` w ostatniej kolumnie.
+- **Limit czasowy dla karnetów wejściowych** — `Admin` → `Karnety` → `Nowy typ karnetu` → typ `Wejściowy` → opcjonalne pole `Limit dni`.
+- **Wyszukiwanie po imieniu i nazwisku** — na stronie `Klienci` i na ekranie check-in działa bez rozróżniania wielkości liter, w dowolnej kolejności (np. `kowalski jan` lub `Jan Kowalski`).
 
 ## Tech Stack
 
@@ -31,7 +43,7 @@ This project is also running in production and is actively used by the real Athl
 
 - Node.js 20+
 - npm
-- PostgreSQL database (for example Neon)
+- PostgreSQL (local or cloud, e.g. Neon)
 
 ## Environment Variables
 
@@ -52,25 +64,40 @@ Also present in `.env.example`:
 
 ## Local Development
 
+The app uses a local PostgreSQL database for development (separate from production).
+
 1. Install dependencies:
 
 ```bash
 npm install
 ```
 
-2. Run migrations:
+2. Make sure local PostgreSQL is running and create the dev database:
 
 ```bash
-npm run db:migrate:deploy
+brew services start postgresql@18
+createdb athletic_dev
 ```
 
-3. Start the app:
+3. Set `DATABASE_URL` in `.env.local` to the local database:
+
+```
+DATABASE_URL=postgresql://YOUR_USER@localhost:5432/athletic_dev
+```
+
+4. Run migrations:
+
+```bash
+npm run db:migrate:dev
+```
+
+5. Start the app:
 
 ```bash
 npm run dev
 ```
 
-4. Optional: seed demo data:
+6. Seed demo data:
 
 ```bash
 curl http://localhost:3000/api/seed
@@ -78,8 +105,8 @@ curl http://localhost:3000/api/seed
 
 Local seed users:
 
-- `admin` / `adminpassword` (`ADMIN`)
-- `recepcja` / `password123` (`RECEPTION`)
+- `admin` / `admin_dev_2024` (`ADMIN`)
+- `recepcja` / `recepcja_dev_2024` (`RECEPTION`)
 
 ## Testing
 
@@ -118,7 +145,9 @@ npm run test:coverage
 - `npm run test` - run tests
 - `npm run test:watch` - run tests in watch mode
 - `npm run test:coverage` - run tests with coverage report
-- `npm run db:migrate:deploy` - apply Prisma migrations
+- `npm run db:migrate:deploy` - apply Prisma migrations (production)
+- `npm run db:migrate:dev` - apply Prisma migrations (local dev database)
+- `npm run db:push:dev` - push schema changes to local dev database (no migration file)
 - `npm run vercel-build` - `prisma migrate deploy` + `prisma generate` + `next build`
 
 ## Deployment (Vercel + PostgreSQL/Neon)
