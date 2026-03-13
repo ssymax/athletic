@@ -36,6 +36,43 @@ This project is also running in production and is actively used by the real Athl
 - npm
 - PostgreSQL (local or cloud, e.g. Neon)
 
+## Docker Development
+
+The easiest way to get started — no local PostgreSQL required.
+
+**Prerequisites:** Docker and Docker Compose.
+
+1. Start the dev environment (Next.js with hot reload + PostgreSQL):
+
+```bash
+npm run docker:dev
+# or:
+docker compose --profile dev up dev db
+```
+
+2. Seed demo data (once the app is running):
+
+```bash
+npm run db:seed
+# or:
+curl http://localhost:3000/api/seed
+```
+
+The app is available at `http://localhost:3000`. Source files are mounted into the container so any change triggers an instant hot reload — no rebuild needed.
+
+Seed users:
+
+- `admin` / `admin_dev_2024` (`ADMIN`)
+- `recepcja` / `recepcja_dev_2024` (`RECEPTION`)
+
+> PostgreSQL is exposed on port `5433` (to avoid conflicts with a local instance on `5432`).
+
+To run the **production build** in Docker instead:
+
+```bash
+docker compose up --build
+```
+
 ## Environment Variables
 
 Copy the example file:
@@ -129,7 +166,7 @@ npm run test:coverage
 
 ## Scripts
 
-- `npm run dev` - start development server
+- `npm run dev` - start development server (local)
 - `npm run build` - `prisma generate` + `next build`
 - `npm run start` - start production server
 - `npm run lint` - run ESLint
@@ -137,8 +174,9 @@ npm run test:coverage
 - `npm run test:watch` - run tests in watch mode
 - `npm run test:coverage` - run tests with coverage report
 - `npm run db:migrate:deploy` - apply Prisma migrations (production)
-- `npm run db:migrate:dev` - apply Prisma migrations (local dev database)
-- `npm run db:push:dev` - push schema changes to local dev database (no migration file)
+- `npm run db:seed` - seed demo data into the running app
+- `npm run docker:dev` - start dev environment in Docker (hot reload + PostgreSQL)
+- `npm run docker:seed` - seed demo data via Docker
 - `npm run vercel-build` - `prisma migrate deploy` + `prisma generate` + `next build`
 
 ## Deployment (Vercel + PostgreSQL/Neon)
