@@ -1,0 +1,57 @@
+services:
+  db:
+    image: postgres:16-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: athletic
+      POSTGRES_PASSWORD: athletic
+      POSTGRES_DB: athletic_dev
+    ports:
+      - "5433:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U athletic -d athletic_dev"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  app:
+    build: .
+    restart: unless-stopped
+    ports:
+      - "3000:3000"
+    environment:
+      DATABASE_URL: postgresql://athletic:athletic@db:5432/athletic_dev
+      AUTH_SECRET: ${AUTH_SECRET:-dev-secret-change-in-production}
+    depends_on:
+      db:
+        condition: service_healthy
+    command: >
+      sh -c "node node_modules/prisma/build/index.js migrate deploy && node server.js"
+
+  dev:
+    image: node:20-alpine
+    working_dir: /app
+    ports:
+      - "3000:3000"
+    environment:
+      DATABASE_URL: postgresql://athletic:athletic@db:5432/athletic_dev
+      AUTH_SECRET: ${AUTH_SECRET:-dev-secret-change-in-production}
+    volumes:
+      - .:/app
+      - /app/node_modules
+    depends_on:
+      db:
+        condition: service_healthy
+    command: >
+      sh -c "apk add --no-cache openssl libc6-compat &&
+             npm install &&
+             node node_modules/prisma/build/index.js migrate deploy &&
+             node node_modules/prisma/build/index.js generate &&
+             npm run dev"
+    profiles:
+      - dev
+
+volumes:
+  postgres_data:
