@@ -2,6 +2,7 @@ import { getProducts } from "@/app/actions/products";
 import Link from "next/link";
 import { UpdateStockButtons } from "./components/UpdateStockButtons";
 import { DeleteProductButton } from "./components/DeleteProductButton";
+import { StockInput } from "./components/StockInput";
 import { Button } from "@/components/ui/Button";
 import { auth } from "@/auth";
 import { redirect } from "next/navigation";
@@ -59,15 +60,7 @@ export default async function ProductsPage() {
                     </td>
                     <td>{product.price.toFixed(2)} zł</td>
                     <td>
-                      <span
-                        className={
-                          product.stock < 5
-                            ? "badge badge-danger"
-                            : "font-semibold"
-                        }
-                      >
-                        {product.stock}
-                      </span>
+                      <StockInput id={product.id} stock={product.stock} />
                     </td>
                     <td>
                       <div className="flex gap-2">

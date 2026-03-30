@@ -58,6 +58,16 @@ export async function updateStock(id: string, amount: number) {
   revalidatePath("/products");
 }
 
+export async function setStock(id: string, stock: number) {
+  await assertAdmin();
+
+  await prisma.product.update({
+    where: { id },
+    data: { stock },
+  });
+  revalidatePath("/products");
+}
+
 export async function deleteProduct(id: string) {
   await assertAdmin();
 
