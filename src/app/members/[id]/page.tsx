@@ -28,25 +28,8 @@ export default async function MemberDetailsPage({
     notFound();
   }
 
-  // Najbliżej wygasający aktywny karnet — to on interesuje obsługę na pierwszy rzut oka.
-  const currentMembership =
-    [...member.memberships]
-      .filter((m) => m.status === "ACTIVE")
-      .sort((a, b) => {
-        const aEnd = a.endDate
-          ? new Date(a.endDate).getTime()
-          : Number.POSITIVE_INFINITY;
-        const bEnd = b.endDate
-          ? new Date(b.endDate).getTime()
-          : Number.POSITIVE_INFINITY;
-        if (aEnd !== bEnd) return aEnd - bEnd;
-        return (
-          new Date(b.startDate).getTime() - new Date(a.startDate).getTime()
-        );
-      })[0] ?? null;
-
   return (
-    <div className="container-wide mx-auto py-8">
+    <div className="container mx-auto py-8">
       <div className="flex items-center gap-4 mb-6">
         <Link
           href="/members"
@@ -64,11 +47,11 @@ export default async function MemberDetailsPage({
         </span>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
         <div className="md:col-span-1 space-y-6">
           <div className="card">
-            <h2 className="text-base font-semibold mb-3">Dane Klubowicza</h2>
-            <div className="space-y-2 text-sm">
+            <h2 className="text-lg font-semibold mb-4">Dane Klubowicza</h2>
+            <div className="space-y-3">
               <div>
                 <span className="label text-muted-foreground">
                   Numer telefonu
@@ -79,7 +62,7 @@ export default async function MemberDetailsPage({
                 <span className="label text-muted-foreground">Notatki</span>
                 <p className="whitespace-pre-wrap">{member.notes || "-"}</p>
               </div>
-              <div className="pt-3 flex gap-2">
+              <div className="pt-4 flex gap-2">
                 <Link
                   href={`/members/${id}/edit`}
                   className="btn btn-outline w-full"
@@ -87,7 +70,7 @@ export default async function MemberDetailsPage({
                   Edytuj dane
                 </Link>
               </div>
-              <div className="pt-1">
+              <div className="pt-2">
                 <DeleteMemberButton
                   id={member.id}
                   fullName={`${member.firstName} ${member.lastName}`}
@@ -95,71 +78,9 @@ export default async function MemberDetailsPage({
               </div>
             </div>
           </div>
-
-          <div className="card">
-            <h2 className="text-base font-semibold mb-3">Aktualny karnet</h2>
-            {currentMembership ? (
-              <div className="space-y-2 text-sm">
-                <div>
-                  <span className="label text-muted-foreground">Typ</span>
-                  <p className="font-medium">{currentMembership.type.name}</p>
-                </div>
-                <div>
-                  <span className="label text-muted-foreground">
-                    Data zakupu
-                  </span>
-                  <p className="font-medium">
-                    {formatDate(currentMembership.purchaseDate)}
-                  </p>
-                </div>
-                <div>
-                  <span className="label text-muted-foreground">
-                    Data rozpoczęcia
-                  </span>
-                  <p className="font-medium">
-                    {formatDate(currentMembership.startDate)}
-                  </p>
-                </div>
-                <div>
-                  <span className="label text-muted-foreground">Ważny do</span>
-                  <p className="font-medium">
-                    {formatDate(currentMembership.endDate)}{" "}
-                    <span className="text-muted-foreground text-sm">
-                      ({validityLabel(currentMembership.endDate)})
-                    </span>
-                  </p>
-                </div>
-                {currentMembership.type.type === "ENTRY" && (
-                  <div>
-                    <span className="label text-muted-foreground">
-                      Pozostałe wejścia
-                    </span>
-                    <p className="font-medium">
-                      {currentMembership.remainingEntries ?? "-"}
-                      {currentMembership.type.entries
-                        ? ` z ${currentMembership.type.entries}`
-                        : ""}
-                    </p>
-                  </div>
-                )}
-                <div>
-                  <span className="label text-muted-foreground">Zapłacono</span>
-                  <p className="font-medium">
-                    {currentMembership.pricePaid.toFixed(2)} zł (
-                    {currentMembership.paymentMethod === "CASH"
-                      ? "gotówka"
-                      : "karta"}
-                    )
-                  </p>
-                </div>
-              </div>
-            ) : (
-              <p className="text-muted-foreground">Brak aktywnego karnetu.</p>
-            )}
-          </div>
         </div>
 
-        <div className="md:col-span-3 space-y-6">
+        <div className="md:col-span-2 space-y-6">
           <div className="card">
             <div className="flex justify-between items-center mb-4">
               <h2 className="text-lg font-semibold">Karnety</h2>
