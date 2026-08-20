@@ -49,7 +49,7 @@ export default async function MembershipTypesPage() {
                     <td>
                       {type.type === "TIME"
                         ? `${type.daysValid} dni`
-                        : `${type.entries} wejść`}
+                        : `${type.entries} wejść${type.daysValid ? ` / ${type.daysValid} dni` : ""}`}
                     </td>
                     <td className="font-semibold">
                       {type.price.toFixed(2)} zł

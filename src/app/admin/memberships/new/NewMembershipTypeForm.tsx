@@ -1,6 +1,7 @@
 "use client";
 
 import { createMembershipType } from "@/app/actions/membershipTypes";
+import { DEFAULT_DAYS_VALID } from "@/lib/memberships";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
@@ -90,6 +91,7 @@ export default function NewMembershipTypeForm() {
                 required
                 min="1"
                 className="input"
+                defaultValue={DEFAULT_DAYS_VALID}
               />
             </div>
           ) : (
@@ -109,7 +111,7 @@ export default function NewMembershipTypeForm() {
               </div>
               <div className="form-group">
                 <label htmlFor="daysValid" className="label">
-                  Limit dni ważności (opcjonalnie)
+                  Limit dni ważności
                 </label>
                 <input
                   type="number"
@@ -117,8 +119,12 @@ export default function NewMembershipTypeForm() {
                   name="daysValid"
                   min="1"
                   className="input"
-                  placeholder="np. 30 — karnet wygaśnie też po tym czasie"
+                  defaultValue={DEFAULT_DAYS_VALID}
                 />
+                <p className="text-xs text-muted-foreground mt-1">
+                  Karnet wejściowy wygaśnie po tylu dniach od daty rozpoczęcia
+                  (domyślnie {DEFAULT_DAYS_VALID} dni).
+                </p>
               </div>
             </>
           )}

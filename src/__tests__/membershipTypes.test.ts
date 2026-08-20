@@ -113,7 +113,7 @@ describe("createMembershipType", () => {
     });
   });
 
-  it("creates ENTRY membership type successfully", async () => {
+  it("defaults ENTRY membership type validity to 30 days", async () => {
     authMock.mockResolvedValue(adminSession);
     prismaMock.membershipType.create.mockResolvedValue({ id: "mt2" });
 
@@ -132,7 +132,7 @@ describe("createMembershipType", () => {
         scope: "ALL",
         type: "ENTRY",
         price: 120,
-        daysValid: null,
+        daysValid: 30,
         entries: 10,
       },
     });
