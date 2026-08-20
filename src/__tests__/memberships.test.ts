@@ -74,7 +74,7 @@ describe("sellMembership", () => {
     expect(createData.endDate).toEqual(expectedEnd);
   });
 
-  it("creates ENTRY membership with remainingEntries and null endDate", async () => {
+  it("creates ENTRY membership with remainingEntries and default 30-day endDate", async () => {
     prismaMock.membershipType.findUnique.mockResolvedValue({
       id: "type2",
       type: "ENTRY",
@@ -96,9 +96,37 @@ describe("sellMembership", () => {
 
     const createData = prismaMock.membership.create.mock.calls[0][0].data;
     expect(createData.remainingEntries).toBe(10);
-    expect(createData.endDate).toBeNull();
     expect(createData.pricePaid).toBe(120);
     expect(createData.paymentMethod).toBe("CARD");
+
+    // Karnet wejściowy bez własnego limitu dni jest ważny 30 dni
+    const expectedEnd = new Date("2025-03-01");
+    expectedEnd.setDate(expectedEnd.getDate() + 30);
+    expect(createData.endDate).toEqual(expectedEnd);
+  });
+
+  it("respects a custom daysValid on ENTRY membership types", async () => {
+    prismaMock.membershipType.findUnique.mockResolvedValue({
+      id: "type3",
+      type: "ENTRY",
+      name: "10 wejść (60 dni)",
+      price: 150,
+      daysValid: 60,
+      entries: 10,
+    });
+    prismaMock.membership.create.mockResolvedValue({ id: "ms3" });
+
+    const fd = new FormData();
+    fd.set("typeId", "type3");
+    fd.set("startDate", "2025-03-01");
+    fd.set("paymentMethod", "CASH");
+
+    await sellMembership("memberId", fd);
+
+    const createData = prismaMock.membership.create.mock.calls[0][0].data;
+    const expectedEnd = new Date("2025-03-01");
+    expectedEnd.setDate(expectedEnd.getDate() + 60);
+    expect(createData.endDate).toEqual(expectedEnd);
   });
 
   it("records PURCHASE action in history", async () => {

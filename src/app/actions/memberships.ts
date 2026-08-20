@@ -2,6 +2,7 @@
 
 import prisma from "@/lib/db";
 import { revalidatePath } from "next/cache";
+import { addDays, resolveDaysValid } from "@/lib/memberships";
 
 export async function getMembership(id: string) {
   return await prisma.membership.findUnique({
@@ -80,15 +81,17 @@ export async function sellMembership(memberId: string, formData: FormData) {
   let endDate: Date | null = null;
   let remainingEntries: number | null = null;
 
-  if (membershipType.type === "TIME" && membershipType.daysValid) {
-    endDate = new Date(startDate);
-    endDate.setDate(endDate.getDate() + membershipType.daysValid);
-  } else if (membershipType.type === "ENTRY") {
+  const daysValid = resolveDaysValid(
+    membershipType.type,
+    membershipType.daysValid,
+  );
+
+  if (membershipType.type === "ENTRY") {
     remainingEntries = membershipType.entries ?? null;
-    if (membershipType.daysValid) {
-      endDate = new Date(startDate);
-      endDate.setDate(endDate.getDate() + membershipType.daysValid);
-    }
+  }
+
+  if (daysValid) {
+    endDate = addDays(startDate, daysValid);
   }
 
   const discount = discountStr ? parseFloat(discountStr) : 0;

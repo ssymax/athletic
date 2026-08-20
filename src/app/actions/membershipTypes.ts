@@ -3,6 +3,7 @@
 import prisma from "@/lib/db";
 import { revalidatePath } from "next/cache";
 import { auth } from "@/auth";
+import { resolveDaysValid } from "@/lib/memberships";
 
 async function assertAdmin() {
   const session = await auth();
@@ -27,7 +28,7 @@ export async function createMembershipType(formData: FormData) {
   const scope = formData.get("scope") as string;
   const type = formData.get("type") as string;
   const price = parseFloat(formData.get("price") as string);
-  const daysValid = formData.get("daysValid")
+  const daysValidInput = formData.get("daysValid")
     ? parseInt(formData.get("daysValid") as string)
     : null;
   const entries = formData.get("entries")
@@ -38,7 +39,7 @@ export async function createMembershipType(formData: FormData) {
     throw new Error("Please fill in all required fields");
   }
 
-  if (type === "TIME" && !daysValid) {
+  if (type === "TIME" && !daysValidInput) {
     throw new Error("Time-based memberships require days validity");
   }
 
@@ -46,7 +47,8 @@ export async function createMembershipType(formData: FormData) {
     throw new Error("Entry-based memberships require number of entries");
   }
 
-  // daysValid for ENTRY type is optional (time limit alongside entry count)
+  // Karnety wejściowe też mają ważność w dniach — domyślnie 30 dni.
+  const daysValid = resolveDaysValid(type, daysValidInput);
 
   await prisma.membershipType.create({
     data: {

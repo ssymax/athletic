@@ -3,6 +3,7 @@
 import { getMember } from "@/app/actions/members";
 import { getMembershipTypes } from "@/app/actions/membershipTypes";
 import { sellMembership } from "@/app/actions/memberships";
+import { addDays, resolveDaysValid } from "@/lib/memberships";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
@@ -26,6 +27,9 @@ export default function NewMembershipPage({
   );
   const [selectedType, setSelectedType] = useState<string>("");
   const [discount, setDiscount] = useState<number>(0);
+  const [startDate, setStartDate] = useState<string>(
+    new Date().toISOString().split("T")[0],
+  );
 
   useEffect(() => {
     params.then(setUnwrappedParams);
@@ -57,6 +61,12 @@ export default function NewMembershipPage({
   }
 
   const selectedTypeData = types.find((t) => t.id === selectedType);
+  const effectiveDaysValid = selectedTypeData
+    ? resolveDaysValid(selectedTypeData.type, selectedTypeData.daysValid)
+    : null;
+  const effectiveEndDate = effectiveDaysValid
+    ? addDays(new Date(startDate), effectiveDaysValid)
+    : null;
 
   if (loading) return <div className="p-8 text-center">Ładowanie...</div>;
   if (!member)
@@ -117,13 +127,19 @@ export default function NewMembershipPage({
                 <strong>Ważność:</strong>{" "}
                 {selectedTypeData.type === "TIME"
                   ? `${selectedTypeData.daysValid} dni`
-                  : `${selectedTypeData.entries} wejść${selectedTypeData.daysValid ? ` lub ${selectedTypeData.daysValid} dni` : ""}`}
+                  : `${selectedTypeData.entries} wejść lub ${effectiveDaysValid} dni`}
               </p>
+              {effectiveEndDate && (
+                <p>
+                  <strong>Ważny do:</strong>{" "}
+                  {effectiveEndDate.toLocaleDateString("pl-PL")}
+                </p>
+              )}
               {discount > 0 && (
                 <p className="text-green-700 font-semibold">
                   <strong>Do zapłaty:</strong>{" "}
-                  {Math.max(0, selectedTypeData.price - discount).toFixed(2)} PLN
-                  (rabat: {discount.toFixed(2)} PLN)
+                  {Math.max(0, selectedTypeData.price - discount).toFixed(2)}{" "}
+                  PLN (rabat: {discount.toFixed(2)} PLN)
                 </p>
               )}
             </div>
@@ -138,7 +154,8 @@ export default function NewMembershipPage({
               id="startDate"
               name="startDate"
               className="input"
-              defaultValue={new Date().toISOString().split("T")[0]}
+              value={startDate}
+              onChange={(e) => setStartDate(e.target.value)}
               required
             />
           </div>

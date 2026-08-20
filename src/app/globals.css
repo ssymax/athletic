@@ -807,6 +807,11 @@ textarea {
   width: min(1120px, 100%);
 }
 
+/* Szerszy wariant dla widoków z rozbudowanymi tabelami. */
+.container-wide {
+  width: min(1440px, 100%);
+}
+
 .mx-auto {
   margin-left: auto;
   margin-right: auto;
@@ -894,6 +899,10 @@ textarea {
 
 .gap-8 {
   gap: 2rem;
+}
+
+.space-y-2 > * + * {
+  margin-top: 0.5rem;
 }
 
 .space-y-3 > * + * {
@@ -1057,6 +1066,10 @@ textarea {
   font-size: 0.88rem;
 }
 
+.text-base {
+  font-size: 1rem;
+}
+
 .text-lg {
   font-size: 1.1rem;
 }
@@ -1109,6 +1122,10 @@ textarea {
 
 .whitespace-pre-wrap {
   white-space: pre-wrap;
+}
+
+.whitespace-nowrap {
+  white-space: nowrap;
 }
 
 .resize-none {
@@ -1168,6 +1185,14 @@ textarea {
 
   .md\:col-span-2 {
     grid-column: span 2 / span 2;
+  }
+
+  .md\:grid-cols-4 {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+  }
+
+  .md\:col-span-3 {
+    grid-column: span 3 / span 3;
   }
 }
 

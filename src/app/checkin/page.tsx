@@ -107,9 +107,11 @@ export default function CheckInPage() {
                       <div>
                         <p className="font-medium text-sm">{m.type.name}</p>
                         <p className="text-xs text-muted">
-                          {m.type.type === "TIME"
-                            ? `Ważny do: ${m.endDate ? new Date(m.endDate).toLocaleDateString() : "-"}`
-                            : `Pozostało wejść: ${m.remainingEntries}`}
+                          {m.type.type === "ENTRY" &&
+                            `Pozostało wejść: ${m.remainingEntries} · `}
+                          {m.endDate
+                            ? `Ważny do: ${new Date(m.endDate).toLocaleDateString("pl-PL")}`
+                            : "Bezterminowy"}
                         </p>
                       </div>
                       <Button

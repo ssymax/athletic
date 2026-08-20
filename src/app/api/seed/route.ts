@@ -4,7 +4,10 @@ import bcrypt from "bcryptjs";
 
 export async function GET() {
   if (process.env.NODE_ENV === "production") {
-    return NextResponse.json({ error: "Not available in production" }, { status: 403 });
+    return NextResponse.json(
+      { error: "Not available in production" },
+      { status: 403 },
+    );
   }
 
   try {
@@ -44,6 +47,7 @@ export async function GET() {
           scope: "GYM",
           type: "ENTRY",
           entries: 10,
+          daysValid: 30,
           price: 180.0,
         },
         {
