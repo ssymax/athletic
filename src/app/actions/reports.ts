@@ -2,6 +2,8 @@
 
 import prisma from "@/lib/db";
 import { auth } from "@/auth";
+import { getExpiringMemberships as listExpiringMemberships } from "@/app/actions/memberships";
+import { EXPIRY_REMINDER_DAYS } from "@/lib/memberships";
 
 async function assertAdmin() {
   const session = await auth();
@@ -174,27 +176,12 @@ export async function getSalesReport(startDate: Date, endDate: Date) {
   return report;
 }
 
-export async function getExpiringMemberships(days: number = 7) {
+// Jedno źródło prawdy dla listy kończących się karnetów — patrz
+// getExpiringMemberships w @/app/actions/memberships.
+export async function getExpiringMemberships(
+  days: number = EXPIRY_REMINDER_DAYS,
+) {
   await assertAdmin();
 
-  const today = new Date();
-  const futureDate = new Date();
-  futureDate.setDate(today.getDate() + days);
-
-  return await prisma.membership.findMany({
-    where: {
-      endDate: {
-        gte: today,
-        lte: futureDate,
-      },
-      status: "ACTIVE",
-    },
-    include: {
-      member: true,
-      type: true,
-    },
-    orderBy: {
-      endDate: "asc",
-    },
-  });
+  return await listExpiringMemberships(days);
 }

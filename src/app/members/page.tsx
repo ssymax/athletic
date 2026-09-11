@@ -1,10 +1,13 @@
 import Link from "next/link";
 import { getMembers } from "@/app/actions/members";
 import { Button } from "@/components/ui/Button";
+import {
+  daysLeft,
+  EXPIRY_REMINDER_DAYS,
+  memberStatus,
+} from "@/lib/memberships";
 
-function formatMembershipStatus(
-  member: Awaited<ReturnType<typeof getMembers>>[number],
-) {
+function formatMembershipStatus(member: MemberRow) {
   if (!member.primaryMembership) {
     return "Brak aktywnego karnetu";
   }
@@ -17,6 +20,32 @@ function formatMembershipStatus(
   }
 
   return `Pozostało: ${member.primaryMembership.remainingEntries ?? 0} wejść`;
+}
+
+type MemberRow = Awaited<ReturnType<typeof getMembers>>[number];
+
+function expiryWarning(endDate: Date | null | undefined) {
+  if (!endDate) return null;
+  const left = daysLeft(endDate);
+  if (left === null || left < 0 || left > EXPIRY_REMINDER_DAYS) return null;
+  if (left === 0) return "Kończy się dziś";
+  if (left === 1) return "Kończy się jutro";
+  return `Kończy się za ${left} dni`;
+}
+
+// Data/liczba wejść w jednej linii, ostrzeżenie o końcu karnetu pod spodem —
+// badge jest inline-flex, więc bez własnego wiersza przykleiłby się do daty.
+function MembershipValidityCell({ member }: { member: MemberRow }) {
+  const warning = expiryWarning(member.primaryMembership?.endDate);
+
+  return (
+    <div className="flex flex-col items-start gap-2">
+      <span className="whitespace-nowrap">
+        {formatMembershipStatus(member)}
+      </span>
+      {warning && <span className="badge badge-warning">{warning}</span>}
+    </div>
+  );
 }
 
 export default async function MembersPage({
@@ -90,13 +119,21 @@ export default async function MembersPage({
                         </span>
                       )}
                     </td>
-                    <td>{formatMembershipStatus(member)}</td>
                     <td>
-                      <span
-                        className={`badge ${member.active ? "badge-success" : "badge-danger"}`}
-                      >
-                        {member.active ? "Aktywny" : "Nieaktywny"}
-                      </span>
+                      <MembershipValidityCell member={member} />
+                    </td>
+                    <td>
+                      {(() => {
+                        const status = memberStatus(
+                          member.active,
+                          member.hasValidMembership,
+                        );
+                        return (
+                          <span className={`badge ${status.badgeClass}`}>
+                            {status.label}
+                          </span>
+                        );
+                      })()}
                     </td>
                     <td className="text-muted notes-cell text-ellipsis">
                       {member.notes || "-"}

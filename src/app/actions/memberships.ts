@@ -2,7 +2,73 @@
 
 import prisma from "@/lib/db";
 import { revalidatePath } from "next/cache";
-import { addDays, resolveDaysValid } from "@/lib/memberships";
+import {
+  addDays,
+  EXPIRY_REMINDER_DAYS,
+  isMembershipExpired,
+  resolveDaysValid,
+  startOfDay,
+} from "@/lib/memberships";
+
+// Przestawia na EXPIRED wszystkie karnety, które formalnie są jeszcze ACTIVE,
+// ale minęła ich data ważności lub skończyły się wejścia. Wywoływane przy
+// każdym odczycie list karnetów, żeby status nigdy nie kłamał.
+export async function expireOutdatedMemberships() {
+  const today = startOfDay(new Date());
+
+  const outdated = await prisma.membership.findMany({
+    where: {
+      status: "ACTIVE",
+      OR: [
+        { endDate: { lt: today } },
+        {
+          remainingEntries: { lte: 0 },
+          type: { is: { type: "ENTRY" } },
+        },
+      ],
+    },
+    select: { id: true, endDate: true, remainingEntries: true },
+  });
+
+  if (outdated.length === 0) return 0;
+
+  await prisma.$transaction([
+    prisma.membership.updateMany({
+      where: { id: { in: outdated.map((membership) => membership.id) } },
+      data: { status: "EXPIRED" },
+    }),
+    prisma.membershipHistory.createMany({
+      data: outdated.map((membership) => ({
+        membershipId: membership.id,
+        action: "EXPIRE",
+        details:
+          membership.endDate && membership.endDate < today
+            ? "Automatyczne wygaśnięcie: minęła data ważności"
+            : "Automatyczne wygaśnięcie: brak pozostałych wejść",
+      })),
+    }),
+  ]);
+
+  return outdated.length;
+}
+
+// Karnety, które kończą się w ciągu najbliższych `days` dni (włącznie z dziś).
+export async function getExpiringMemberships(days = EXPIRY_REMINDER_DAYS) {
+  await expireOutdatedMemberships();
+
+  const today = startOfDay(new Date());
+  const until = addDays(today, days + 1);
+
+  return await prisma.membership.findMany({
+    where: {
+      status: "ACTIVE",
+      endDate: { gte: today, lt: until },
+      member: { is: { active: true } },
+    },
+    include: { member: true, type: true },
+    orderBy: { endDate: "asc" },
+  });
+}
 
 export async function getMembership(id: string) {
   return await prisma.membership.findUnique({
@@ -37,6 +103,16 @@ export async function updateMembership(
   });
 
   if (!existing) throw new Error("Nie znaleziono karnetu");
+
+  // Karnet po terminie (lub bez wejść) nie może zostać zapisany jako aktywny.
+  if (
+    status === "ACTIVE" &&
+    isMembershipExpired({ endDate, remainingEntries, type: existing.type })
+  ) {
+    throw new Error(
+      "Karnet po terminie ważności lub bez pozostałych wejść nie może mieć statusu Aktywny. Zmień datę zakończenia / liczbę wejść albo ustaw status Wygasły.",
+    );
+  }
 
   await prisma.membership.update({
     where: { id: membershipId },

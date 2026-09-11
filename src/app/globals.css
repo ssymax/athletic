@@ -607,6 +607,14 @@ textarea {
   background: var(--success);
 }
 
+/* Lista kończących się karnetów na panelu — stała wysokość, przewijana w środku,
+   żeby karta nie rosła przy dużej liczbie pozycji. */
+.scroll-list {
+  height: 16.5rem;
+  overflow-y: auto;
+  padding-right: 0.4rem;
+}
+
 .quick-action {
   text-align: center;
   display: flex;

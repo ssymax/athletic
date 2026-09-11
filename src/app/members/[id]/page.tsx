@@ -2,7 +2,9 @@ import { getMember } from "@/app/actions/members";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { DeleteMemberButton } from "./components/DeleteMemberButton";
-import { daysLeft } from "@/lib/memberships";
+import { Button } from "@/components/ui/Button";
+import { Card } from "@/components/ui/Card";
+import { daysLeft, isMembershipValid, memberStatus } from "@/lib/memberships";
 
 const formatDate = (date: Date | string | null | undefined) =>
   date ? new Date(date).toLocaleDateString("pl-PL") : "-";
@@ -14,6 +16,19 @@ function validityLabel(endDate: Date | null) {
   if (left === 0) return "wygasa dziś";
   if (left === 1) return "został 1 dzień";
   return `zostało ${left} dni`;
+}
+
+function statusLabel(status: string) {
+  if (status === "ACTIVE") return "Aktywny";
+  if (status === "EXPIRED") return "Wygasły";
+  if (status === "CANCELLED") return "Anulowany";
+  return status;
+}
+
+function statusBadge(status: string) {
+  if (status === "ACTIVE") return "badge-success";
+  if (status === "EXPIRED") return "badge-warning";
+  return "badge-neutral";
 }
 
 export default async function MemberDetailsPage({
@@ -28,72 +43,62 @@ export default async function MemberDetailsPage({
     notFound();
   }
 
+  const hasValidMembership = member.memberships.some((membership) =>
+    isMembershipValid(membership),
+  );
+  const status = memberStatus(member.active, hasValidMembership);
+
   return (
-    <div className="container mx-auto py-8">
+    <div className="fade-in">
       <div className="flex items-center gap-4 mb-6">
-        <Link
-          href="/members"
-          className="text-muted-foreground hover:text-foreground"
-        >
+        <Link href="/members" className="text-muted">
           ← Wróć
         </Link>
-        <h1 className="text-2xl font-bold">
+        <h1>
           {member.firstName} {member.lastName}
         </h1>
-        <span
-          className={`badge ${member.active ? "badge-success" : "badge-danger"}`}
-        >
-          {member.active ? "Aktywny" : "Nieaktywny"}
-        </span>
+        <span className={`badge ${status.badgeClass}`}>{status.label}</span>
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
         <div className="md:col-span-1 space-y-6">
-          <div className="card">
-            <h2 className="text-lg font-semibold mb-4">Dane Klubowicza</h2>
-            <div className="space-y-3">
+          <Card title="Dane Klubowicza">
+            <div className="space-y-4">
               <div>
-                <span className="label text-muted-foreground">
-                  Numer telefonu
-                </span>
+                <span className="label text-muted">Numer telefonu</span>
                 <p className="font-medium">{member.phoneNumber}</p>
               </div>
               <div>
-                <span className="label text-muted-foreground">Notatki</span>
+                <span className="label text-muted">Notatki</span>
                 <p className="whitespace-pre-wrap">{member.notes || "-"}</p>
               </div>
-              <div className="pt-4 flex gap-2">
+              <div className="flex flex-col gap-2 pt-4">
                 <Link
                   href={`/members/${id}/edit`}
                   className="btn btn-outline w-full"
                 >
                   Edytuj dane
                 </Link>
-              </div>
-              <div className="pt-2">
                 <DeleteMemberButton
                   id={member.id}
                   fullName={`${member.firstName} ${member.lastName}`}
                 />
               </div>
             </div>
-          </div>
+          </Card>
         </div>
 
         <div className="md:col-span-2 space-y-6">
           <div className="card">
             <div className="flex justify-between items-center mb-4">
-              <h2 className="text-lg font-semibold">Karnety</h2>
-              <Link
-                href={`/members/${id}/memberships/new`}
-                className="btn btn-primary btn-sm text-sm"
-              >
-                Sprzedaj Karnet
+              <h3 className="text-xl font-semibold">Karnety</h3>
+              <Link href={`/members/${id}/memberships/new`}>
+                <Button size="sm">Sprzedaj Karnet</Button>
               </Link>
             </div>
 
-            <div className="table-container">
-              <table>
+            <div className="table-wrap">
+              <table className="table">
                 <thead>
                   <tr>
                     <th>Typ</th>
@@ -108,10 +113,7 @@ export default async function MemberDetailsPage({
                 <tbody>
                   {member.memberships.length === 0 ? (
                     <tr>
-                      <td
-                        colSpan={7}
-                        className="text-center py-4 text-muted-foreground"
-                      >
+                      <td colSpan={7} className="table-empty">
                         Brak historii karnetów.
                       </td>
                     </tr>
@@ -134,16 +136,16 @@ export default async function MemberDetailsPage({
                           )}
                           {membership.status === "ACTIVE" &&
                             membership.endDate && (
-                              <div className="text-muted-foreground text-xs">
+                              <div className="text-muted text-xs">
                                 {validityLabel(membership.endDate)}
                               </div>
                             )}
                         </td>
                         <td>
                           <span
-                            className={`badge ${membership.status === "ACTIVE" ? "badge-success" : "badge-neutral"}`}
+                            className={`badge ${statusBadge(membership.status)}`}
                           >
-                            {membership.status}
+                            {statusLabel(membership.status)}
                           </span>
                         </td>
                         <td className="whitespace-nowrap">

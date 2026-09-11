@@ -2,8 +2,12 @@
 
 import prisma from "@/lib/db";
 import { revalidatePath } from "next/cache";
+import { isMembershipExpired, isMembershipValid } from "@/lib/memberships";
+import { expireOutdatedMemberships } from "@/app/actions/memberships";
 
 export async function findMemberForCheckin(query: string) {
+  await expireOutdatedMemberships();
+
   const orConditions: object[] = [
     { phoneNumber: { contains: query, mode: "insensitive" } },
     { firstName: { contains: query, mode: "insensitive" } },
@@ -30,7 +34,7 @@ export async function findMemberForCheckin(query: string) {
     );
   }
 
-  return await prisma.member.findMany({
+  const members = await prisma.member.findMany({
     where: {
       OR: orConditions,
       active: true,
@@ -43,6 +47,13 @@ export async function findMemberForCheckin(query: string) {
     },
     take: 5,
   });
+
+  return members.map((member) => ({
+    ...member,
+    memberships: member.memberships.filter((membership) =>
+      isMembershipValid(membership),
+    ),
+  }));
 }
 
 export async function registerVisit(memberId: string, membershipId: string) {
@@ -55,9 +66,15 @@ export async function registerVisit(memberId: string, membershipId: string) {
     return { success: false, message: "Invalid or inactive membership" };
   }
 
-  // Check validity
-  const now = new Date();
-  if (membership.endDate && membership.endDate < now) {
+  // Check validity — dzień końca ważności jest jeszcze ważny.
+  if (
+    membership.endDate &&
+    isMembershipExpired({
+      endDate: membership.endDate,
+      remainingEntries: null,
+      type: { type: "TIME" },
+    })
+  ) {
     await prisma.membership.update({
       where: { id: membershipId },
       data: {
@@ -81,20 +98,31 @@ export async function registerVisit(memberId: string, membershipId: string) {
       return { success: false, message: "No entries remaining" };
     }
 
+    // Ostatnie wejście wyczerpuje karnet — od razu ustawiamy EXPIRED,
+    // żeby klubowicz nie zostawał ze statusem "aktywny" bez pokrycia.
+    const isLastEntry = membership.remainingEntries === 1;
+
     // Deduct entry
     await prisma.membership.update({
       where: { id: membershipId },
       data: {
         remainingEntries: { decrement: 1 },
+        ...(isLastEntry ? { status: "EXPIRED" } : {}),
         history: {
           create: { action: "USE_ENTRY", details: "Visit registered" },
         },
       },
     });
 
-    // If reached 0, maybe expire? Requirement says "status: expired".
-    // Usually zero entries doesn't mean expired time-wise, but effectively yes.
-    // Let's keep it active but with 0 entries until manually changed or if logic dictates.
+    if (isLastEntry) {
+      await prisma.membershipHistory.create({
+        data: {
+          membershipId,
+          action: "EXPIRE",
+          details: "Automatyczne wygaśnięcie: wykorzystano ostatnie wejście",
+        },
+      });
+    }
   } else {
     // Time based - just log
     await prisma.membership.update({

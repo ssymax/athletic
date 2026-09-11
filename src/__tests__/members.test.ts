@@ -13,9 +13,11 @@ const prismaMock = vi.hoisted(() => ({
   membership: {
     findMany: vi.fn(),
     deleteMany: vi.fn(),
+    updateMany: vi.fn(),
   },
   membershipHistory: {
     deleteMany: vi.fn(),
+    createMany: vi.fn(),
   },
   $transaction: vi.fn(),
 }));
@@ -30,6 +32,12 @@ import {
   deleteMember,
 } from "@/app/actions/members";
 
+function futureDate(daysFromNow: number) {
+  const d = new Date();
+  d.setDate(d.getDate() + daysFromNow);
+  return d;
+}
+
 function makeMembership(overrides: {
   id?: string;
   type?: string;
@@ -39,15 +47,21 @@ function makeMembership(overrides: {
 }) {
   return {
     id: overrides.id ?? "m1",
+    status: "ACTIVE",
     type: { type: overrides.type ?? "TIME", name: "Standard" },
-    startDate: overrides.startDate ?? new Date("2025-01-01"),
-    endDate: overrides.endDate ?? new Date("2025-02-01"),
+    startDate: overrides.startDate ?? new Date("2035-01-01"),
+    endDate:
+      overrides.endDate === undefined ? futureDate(30) : overrides.endDate,
     remainingEntries: overrides.remainingEntries ?? null,
   };
 }
 
 describe("getMembers", () => {
-  beforeEach(() => vi.clearAllMocks());
+  beforeEach(() => {
+    vi.clearAllMocks();
+    // Brak karnetów do automatycznego wygaszenia.
+    prismaMock.membership.findMany.mockResolvedValue([]);
+  });
 
   it("fetches all members without query", async () => {
     prismaMock.member.findMany.mockResolvedValue([]);
@@ -63,7 +77,9 @@ describe("getMembers", () => {
     await getMembers("Anna");
     const call = prismaMock.member.findMany.mock.calls[0][0];
     expect(call.where.OR).toHaveLength(3);
-    expect(call.where.OR[0]).toEqual({ firstName: { contains: "Anna", mode: "insensitive" } });
+    expect(call.where.OR[0]).toEqual({
+      firstName: { contains: "Anna", mode: "insensitive" },
+    });
   });
 
   it("attaches primaryMembership: null when no memberships", async () => {
@@ -78,7 +94,7 @@ describe("getMembers", () => {
     const timeMembership = makeMembership({
       id: "t1",
       type: "TIME",
-      endDate: new Date("2025-06-01"),
+      endDate: futureDate(180),
     });
     const entryMembership = makeMembership({
       id: "e1",
@@ -102,12 +118,12 @@ describe("getMembers", () => {
     const soonExpiring = makeMembership({
       id: "soon",
       type: "TIME",
-      endDate: new Date("2025-03-01"),
+      endDate: futureDate(30),
     });
     const laterExpiring = makeMembership({
       id: "later",
       type: "TIME",
-      endDate: new Date("2025-12-01"),
+      endDate: futureDate(300),
     });
 
     prismaMock.member.findMany.mockResolvedValue([
@@ -224,6 +240,8 @@ describe("updateMember", () => {
 
 describe("getMember", () => {
   it("calls findUnique with correct id and includes", async () => {
+    vi.clearAllMocks();
+    prismaMock.membership.findMany.mockResolvedValue([]);
     prismaMock.member.findUnique.mockResolvedValue(null);
     await getMember("abc");
     expect(prismaMock.member.findUnique).toHaveBeenCalledWith({

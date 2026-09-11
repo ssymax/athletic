@@ -2,10 +2,24 @@ import Link from "next/link";
 import prisma from "@/lib/db";
 import { Card } from "@/components/ui/Card";
 import { auth } from "@/auth";
+import { getExpiringMemberships } from "@/app/actions/memberships";
+import { daysLeft, EXPIRY_REMINDER_DAYS } from "@/lib/memberships";
+
+function expiryLabel(endDate: Date | null) {
+  const left = daysLeft(endDate);
+  if (left === null) return "";
+  if (left <= 0) return "kończy się dziś";
+  if (left === 1) return "został 1 dzień";
+  return `zostało ${left} dni`;
+}
 
 export default async function DashboardPage() {
   const session = await auth();
   const isAdmin = session?.user?.role === "ADMIN";
+
+  // Pobranie kończących się karnetów najpierw domyka te po terminie,
+  // więc statystyki niżej liczą się już na poprawnych statusach.
+  const expiringMemberships = await getExpiringMemberships();
 
   // Basic stats for dashboard
   const membersCount = await prisma.member.count({ where: { active: true } });
@@ -79,6 +93,51 @@ export default async function DashboardPage() {
           </div>
         </Card>
       </div>
+
+      <Card
+        title={`Karnety kończące się w ciągu ${EXPIRY_REMINDER_DAYS} dni`}
+        className="mb-6"
+      >
+        {expiringMemberships.length === 0 ? (
+          <p className="text-sm text-muted">
+            Brak karnetów kończących się w najbliższych {EXPIRY_REMINDER_DAYS}{" "}
+            dniach.
+          </p>
+        ) : (
+          <div className="scroll-list flex flex-col gap-3">
+            {expiringMemberships.map((membership) => (
+              <div
+                key={membership.id}
+                className="panel-soft flex items-center justify-between p-3"
+              >
+                <div className="flex flex-col">
+                  <Link
+                    href={`/members/${membership.memberId}`}
+                    className="font-medium text-primary"
+                  >
+                    {membership.member.firstName} {membership.member.lastName}
+                  </Link>
+                  <span className="text-xs text-muted">
+                    {membership.type.name} · tel.{" "}
+                    {membership.member.phoneNumber}
+                  </span>
+                </div>
+                <div className="flex flex-col items-end">
+                  <span className="badge badge-warning">
+                    {expiryLabel(membership.endDate)}
+                  </span>
+                  <span className="text-xs text-muted mt-1">
+                    do{" "}
+                    {membership.endDate
+                      ? new Date(membership.endDate).toLocaleDateString("pl-PL")
+                      : "-"}
+                  </span>
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
+      </Card>
 
       <div className="grid grid-cols-2 gap-6">
         <Card title="Ostatnie Wejścia">

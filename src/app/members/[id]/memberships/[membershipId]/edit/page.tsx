@@ -6,7 +6,9 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 
-type MembershipWithType = NonNullable<Awaited<ReturnType<typeof getMembership>>>;
+type MembershipWithType = NonNullable<
+  Awaited<ReturnType<typeof getMembership>>
+>;
 
 export default function EditMembershipPage({
   params,
@@ -141,6 +143,10 @@ export default function EditMembershipPage({
               <option value="EXPIRED">Wygasły</option>
               <option value="CANCELLED">Anulowany</option>
             </select>
+            <p className="text-xs text-muted mt-1">
+              Karnet po dacie zakończenia lub bez pozostałych wejść nie może być
+              aktywny.
+            </p>
           </div>
 
           <div className="form-group">

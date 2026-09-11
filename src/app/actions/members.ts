@@ -2,6 +2,8 @@
 
 import prisma from "@/lib/db";
 import { revalidatePath } from "next/cache";
+import { isMembershipValid } from "@/lib/memberships";
+import { expireOutdatedMemberships } from "@/app/actions/memberships";
 
 function pickPrimaryMembershipForList(
   memberships: {
@@ -46,6 +48,8 @@ function pickPrimaryMembershipForList(
 }
 
 export async function getMembers(query?: string) {
+  await expireOutdatedMemberships();
+
   const where = query
     ? {
         OR: [
@@ -111,10 +115,15 @@ export async function getMembers(query?: string) {
   });
 
   return members.map((member) => {
-    const primaryMembership = pickPrimaryMembershipForList(member.memberships);
+    const validMemberships = member.memberships.filter((membership) =>
+      isMembershipValid(membership),
+    );
+    const primaryMembership = pickPrimaryMembershipForList(validMemberships);
     return {
       ...member,
+      memberships: validMemberships,
       primaryMembership,
+      hasValidMembership: validMemberships.length > 0,
     };
   });
 }
@@ -165,6 +174,8 @@ export async function updateMember(id: string, formData: FormData) {
 }
 
 export async function getMember(id: string) {
+  await expireOutdatedMemberships();
+
   return await prisma.member.findUnique({
     where: { id },
     include: {

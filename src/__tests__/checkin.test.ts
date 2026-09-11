@@ -9,7 +9,14 @@ const prismaMock = vi.hoisted(() => ({
   membership: {
     findUnique: vi.fn(),
     update: vi.fn(),
+    findMany: vi.fn(),
+    updateMany: vi.fn(),
   },
+  membershipHistory: {
+    create: vi.fn(),
+    createMany: vi.fn(),
+  },
+  $transaction: vi.fn(),
 }));
 
 vi.mock("@/lib/db", () => ({ default: prismaMock }));
@@ -17,7 +24,11 @@ vi.mock("@/lib/db", () => ({ default: prismaMock }));
 import { findMemberForCheckin, registerVisit } from "@/app/actions/checkin";
 
 describe("findMemberForCheckin", () => {
-  beforeEach(() => vi.clearAllMocks());
+  beforeEach(() => {
+    vi.clearAllMocks();
+    // Brak karnetów do automatycznego wygaszenia.
+    prismaMock.membership.findMany.mockResolvedValue([]);
+  });
 
   it("searches by phoneNumber and lastName, only active members", async () => {
     prismaMock.member.findMany.mockResolvedValue([]);
@@ -43,10 +54,43 @@ describe("findMemberForCheckin", () => {
     const call = prismaMock.member.findMany.mock.calls[0][0];
     expect(call.take).toBe(5);
   });
+
+  it("hides memberships that are already used up", async () => {
+    prismaMock.member.findMany.mockResolvedValue([
+      {
+        id: "1",
+        firstName: "Jan",
+        memberships: [
+          {
+            id: "valid",
+            status: "ACTIVE",
+            type: { type: "ENTRY" },
+            endDate: null,
+            remainingEntries: 3,
+          },
+          {
+            id: "used-up",
+            status: "ACTIVE",
+            type: { type: "ENTRY" },
+            endDate: null,
+            remainingEntries: 0,
+          },
+        ],
+      },
+    ]);
+
+    const [member] = await findMemberForCheckin("Jan");
+    expect(member.memberships.map((m: { id: string }) => m.id)).toEqual([
+      "valid",
+    ]);
+  });
 });
 
 describe("registerVisit", () => {
-  beforeEach(() => vi.clearAllMocks());
+  beforeEach(() => {
+    vi.clearAllMocks();
+    prismaMock.membership.findMany.mockResolvedValue([]);
+  });
 
   it("returns failure when membership not found", async () => {
     prismaMock.membership.findUnique.mockResolvedValue(null);
@@ -147,6 +191,45 @@ describe("registerVisit", () => {
     const updateCall = prismaMock.membership.update.mock.calls[0][0];
     expect(updateCall.data).not.toHaveProperty("remainingEntries");
     expect(updateCall.data.history.create.action).toBe("USE_ENTRY");
+    expect(result).toEqual({ success: true, message: "Visit registered" });
+  });
+
+  it("expires the membership when the last entry is used", async () => {
+    prismaMock.membership.findUnique.mockResolvedValue({
+      id: "ms1",
+      status: "ACTIVE",
+      type: { type: "ENTRY" },
+      endDate: null,
+      remainingEntries: 1,
+    });
+    prismaMock.membership.update.mockResolvedValue({});
+    prismaMock.membershipHistory.create.mockResolvedValue({});
+
+    const result = await registerVisit("memberId", "ms1");
+
+    expect(prismaMock.membership.update).toHaveBeenCalledWith(
+      expect.objectContaining({
+        data: expect.objectContaining({
+          remainingEntries: { decrement: 1 },
+          status: "EXPIRED",
+        }),
+      }),
+    );
+    expect(result).toEqual({ success: true, message: "Visit registered" });
+  });
+
+  it("still allows check-in on the last day of validity", async () => {
+    prismaMock.membership.findUnique.mockResolvedValue({
+      id: "ms1",
+      status: "ACTIVE",
+      type: { type: "TIME" },
+      endDate: new Date(),
+      remainingEntries: null,
+    });
+    prismaMock.membership.update.mockResolvedValue({});
+
+    const result = await registerVisit("memberId", "ms1");
+
     expect(result).toEqual({ success: true, message: "Visit registered" });
   });
 });
