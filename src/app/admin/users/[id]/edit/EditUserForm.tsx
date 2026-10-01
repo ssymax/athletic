@@ -4,6 +4,7 @@ import { updateUser } from "@/app/actions/users";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
+import { useTranslations } from "next-intl";
 
 interface EditUserFormProps {
   user: {
@@ -14,6 +15,7 @@ interface EditUserFormProps {
 }
 
 export default function EditUserForm({ user }: EditUserFormProps) {
+  const t = useTranslations("users");
   const router = useRouter();
   const [error, setError] = useState<string | null>(null);
 
@@ -23,7 +25,7 @@ export default function EditUserForm({ user }: EditUserFormProps) {
       router.push("/admin/users");
       router.refresh();
     } catch (e) {
-      setError(e instanceof Error ? e.message : "Nie udało się zapisać zmian");
+      setError(e instanceof Error ? e.message : t("errors.saveFailed"));
     }
   }
 
@@ -34,9 +36,9 @@ export default function EditUserForm({ user }: EditUserFormProps) {
           href="/admin/users"
           className="text-muted-foreground hover:text-foreground"
         >
-          ← Wróć
+          {t("form.back")}
         </Link>
-        <h1 className="text-2xl font-bold">Edytuj użytkownika</h1>
+        <h1 className="text-2xl font-bold">{t("form.editTitle")}</h1>
       </div>
 
       <div className="card">
@@ -45,7 +47,7 @@ export default function EditUserForm({ user }: EditUserFormProps) {
 
           <div className="form-group">
             <label htmlFor="username" className="label">
-              Login
+              {t("form.username")}
             </label>
             <input
               id="username"
@@ -59,20 +61,20 @@ export default function EditUserForm({ user }: EditUserFormProps) {
 
           <div className="form-group">
             <label htmlFor="password" className="label">
-              Nowe hasło
+              {t("form.newPassword")}
             </label>
             <input
               id="password"
               name="password"
               type="password"
               className="input"
-              placeholder="Zostaw puste, aby nie zmieniać"
+              placeholder={t("form.newPasswordPlaceholder")}
             />
           </div>
 
           <div className="form-group">
             <label htmlFor="role" className="label">
-              Rola
+              {t("form.role")}
             </label>
             <select
               id="role"
@@ -80,17 +82,17 @@ export default function EditUserForm({ user }: EditUserFormProps) {
               className="input"
               defaultValue={user.role}
             >
-              <option value="RECEPTION">Recepcjonista</option>
-              <option value="ADMIN">Administrator</option>
+              <option value="RECEPTION">{t("roles.RECEPTION")}</option>
+              <option value="ADMIN">{t("roles.ADMIN")}</option>
             </select>
           </div>
 
           <div className="flex justify-end gap-3 pt-4">
             <Link href="/admin/users" className="btn btn-secondary">
-              Anuluj
+              {t("form.cancel")}
             </Link>
             <button type="submit" className="btn btn-primary">
-              Zapisz zmiany
+              {t("form.save")}
             </button>
           </div>
         </form>

@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { getFormatter, getTranslations } from "next-intl/server";
 import prisma from "@/lib/db";
 import { Card } from "@/components/ui/Card";
 import { auth } from "@/auth";
@@ -12,24 +13,24 @@ import {
   LAPSED_REMINDER_DAYS,
 } from "@/lib/memberships";
 
-function expiryLabel(endDate: Date | null) {
-  const left = daysLeft(endDate);
-  if (left === null) return "";
-  if (left <= 0) return "kończy się dziś";
-  if (left === 1) return "został 1 dzień";
-  return `zostało ${left} dni`;
-}
-
-function lapsedLabel(daysWithout: number) {
-  if (daysWithout === 1) return "brak karnetu od 1 dnia";
-  return `brak karnetu od ${daysWithout} dni`;
-}
-
 export default async function DashboardPage({
   searchParams,
 }: {
   searchParams: Promise<{ lista?: string }>;
 }) {
+  const t = await getTranslations("dashboard");
+  const format = await getFormatter();
+  const dateFormat = {
+    day: "numeric",
+    month: "numeric",
+    year: "numeric",
+  } as const;
+  const expiryLabel = (endDate: Date | null) => {
+    const left = daysLeft(endDate);
+    if (left === null) return "";
+    if (left <= 0) return t("expiresToday");
+    return t("daysLeft", { days: left });
+  };
   const session = await auth();
   const isAdmin = session?.user?.role === "ADMIN";
   const showLapsed = (await searchParams).lista === "brak-karnetu";
@@ -72,13 +73,13 @@ export default async function DashboardPage({
 
   return (
     <div className="fade-in">
-      <h1 className="mb-6">Panel Główny</h1>
+      <h1 className="mb-6">{t("title")}</h1>
 
       <div className="grid grid-cols-3 gap-6 mb-6">
         <Card>
           <div className="flex flex-col">
             <span className="text-xs text-muted font-medium mb-1 uppercase tracking-wider">
-              Aktywni Klubowicze
+              {t("activeMembers")}
             </span>
             <div className="flex items-center justify-between">
               <span className="stat-value">{membersCount}</span>
@@ -89,7 +90,7 @@ export default async function DashboardPage({
         <Card>
           <div className="flex flex-col">
             <span className="text-xs text-muted font-medium mb-1 uppercase tracking-wider">
-              Sprzedaż Dzisiaj
+              {t("salesToday")}
             </span>
             <div className="flex items-center justify-between">
               <span className="stat-value">
@@ -102,7 +103,7 @@ export default async function DashboardPage({
         <Card>
           <div className="flex flex-col">
             <span className="text-xs text-muted font-medium mb-1 uppercase tracking-wider">
-              Aktywne Karnety
+              {t("activeMemberships")}
             </span>
             <div className="flex items-center justify-between">
               <span className="stat-value">{activeMemberships}</span>
@@ -119,23 +120,27 @@ export default async function DashboardPage({
             scroll={false}
             className={`btn btn-sm ${showLapsed ? "btn-ghost" : "btn-secondary"}`}
           >
-            Koniec karnetu ≤ {EXPIRY_REMINDER_DAYS} dni (
-            {expiringMemberships.length})
+            {t("expiringTab", {
+              days: EXPIRY_REMINDER_DAYS,
+              count: expiringMemberships.length,
+            })}
           </Link>
           <Link
             href="/dashboard?lista=brak-karnetu"
             scroll={false}
             className={`btn btn-sm ${showLapsed ? "btn-secondary" : "btn-ghost"}`}
           >
-            Brak karnetu 1–{LAPSED_REMINDER_DAYS} dni ({lapsedMembers.length})
+            {t("lapsedTab", {
+              days: LAPSED_REMINDER_DAYS,
+              count: lapsedMembers.length,
+            })}
           </Link>
         </div>
 
         {showLapsed ? (
           lapsedMembers.length === 0 ? (
             <p className="text-sm text-muted">
-              Brak klubowiczów, którym karnet skończył się w ostatnich{" "}
-              {LAPSED_REMINDER_DAYS} dniach.
+              {t("lapsedEmpty", { days: LAPSED_REMINDER_DAYS })}
             </p>
           ) : (
             <div className="scroll-list flex flex-col gap-3">
@@ -152,18 +157,23 @@ export default async function DashboardPage({
                       {lapsed.member.firstName} {lapsed.member.lastName}
                     </Link>
                     <span className="text-xs text-muted">
-                      {lapsed.type.name} · tel. {lapsed.member.phoneNumber}
+                      {t("memberLine", {
+                        type: lapsed.type.name,
+                        phone: lapsed.member.phoneNumber,
+                      })}
                     </span>
                   </div>
                   <div className="flex flex-col items-end">
                     <span className="badge badge-danger">
-                      {lapsedLabel(lapsed.daysWithout)}
+                      {t("lapsedSince", { days: lapsed.daysWithout })}
                     </span>
                     <span className="text-xs text-muted mt-1">
-                      ważny do{" "}
-                      {new Date(lapsed.lastValidDay).toLocaleDateString(
-                        "pl-PL",
-                      )}
+                      {t("lapsedValidUntil", {
+                        date: format.dateTime(
+                          new Date(lapsed.lastValidDay),
+                          dateFormat,
+                        ),
+                      })}
                     </span>
                   </div>
                 </div>
@@ -172,8 +182,7 @@ export default async function DashboardPage({
           )
         ) : expiringMemberships.length === 0 ? (
           <p className="text-sm text-muted">
-            Brak karnetów kończących się w najbliższych {EXPIRY_REMINDER_DAYS}{" "}
-            dniach.
+            {t("expiringEmpty", { days: EXPIRY_REMINDER_DAYS })}
           </p>
         ) : (
           <div className="scroll-list flex flex-col gap-3">
@@ -190,8 +199,10 @@ export default async function DashboardPage({
                     {membership.member.firstName} {membership.member.lastName}
                   </Link>
                   <span className="text-xs text-muted">
-                    {membership.type.name} · tel.{" "}
-                    {membership.member.phoneNumber}
+                    {t("memberLine", {
+                      type: membership.type.name,
+                      phone: membership.member.phoneNumber,
+                    })}
                   </span>
                 </div>
                 <div className="flex flex-col items-end">
@@ -199,10 +210,14 @@ export default async function DashboardPage({
                     {expiryLabel(membership.endDate)}
                   </span>
                   <span className="text-xs text-muted mt-1">
-                    do{" "}
-                    {membership.endDate
-                      ? new Date(membership.endDate).toLocaleDateString("pl-PL")
-                      : "-"}
+                    {t("validUntil", {
+                      date: membership.endDate
+                        ? format.dateTime(
+                            new Date(membership.endDate),
+                            dateFormat,
+                          )
+                        : "-",
+                    })}
                   </span>
                 </div>
               </div>
@@ -212,10 +227,10 @@ export default async function DashboardPage({
       </Card>
 
       <div className="grid grid-cols-2 gap-6">
-        <Card title="Ostatnie Wejścia">
+        <Card title={t("recentCheckins")}>
           <div className="flex flex-col gap-3">
             {recentCheckins.length === 0 ? (
-              <p className="text-sm text-muted">Brak ostatnich wejść.</p>
+              <p className="text-sm text-muted">{t("noRecentCheckins")}</p>
             ) : (
               recentCheckins.map((checkin) => (
                 <div
@@ -230,7 +245,7 @@ export default async function DashboardPage({
                     </span>
                   </div>
                   <span className="text-xs text-muted">
-                    {new Date(checkin.date).toLocaleTimeString([], {
+                    {format.dateTime(new Date(checkin.date), {
                       hour: "2-digit",
                       minute: "2-digit",
                     })}
@@ -242,29 +257,33 @@ export default async function DashboardPage({
               href="/checkin"
               className="text-sm font-medium text-primary mt-2"
             >
-              Zobacz wszystkie wejścia &rarr;
+              {t("viewAllCheckins")}
             </Link>
           </div>
         </Card>
 
-        <Card title="Szybkie Akcje">
+        <Card title={t("quickActions")}>
           <div className="grid grid-cols-2 gap-4">
             <Link href="/checkin" className="card quick-action">
               <div className="quick-action-icon">✅</div>
-              <span className="text-sm font-medium">Wejście</span>
+              <span className="text-sm font-medium">{t("actionCheckin")}</span>
             </Link>
             <Link href="/pos" className="card quick-action">
               <div className="quick-action-icon">🛒</div>
-              <span className="text-sm font-medium">Sprzedaż</span>
+              <span className="text-sm font-medium">{t("actionSale")}</span>
             </Link>
             <Link href="/members/add" className="card quick-action">
               <div className="quick-action-icon">👤</div>
-              <span className="text-sm font-medium">Dodaj Klubowicza</span>
+              <span className="text-sm font-medium">
+                {t("actionAddMember")}
+              </span>
             </Link>
             {isAdmin && (
               <Link href="/reports" className="card quick-action">
                 <div className="quick-action-icon">📈</div>
-                <span className="text-sm font-medium">Raporty</span>
+                <span className="text-sm font-medium">
+                  {t("actionReports")}
+                </span>
               </Link>
             )}
           </div>

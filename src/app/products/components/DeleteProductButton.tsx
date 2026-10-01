@@ -2,6 +2,7 @@
 
 import { deleteProduct } from "@/app/actions/products";
 import { useEffect, useState, useTransition } from "react";
+import { useTranslations } from "next-intl";
 
 interface DeleteProductButtonProps {
   id: string;
@@ -9,6 +10,7 @@ interface DeleteProductButtonProps {
 }
 
 export function DeleteProductButton({ id, name }: DeleteProductButtonProps) {
+  const t = useTranslations("products");
   const [isOpen, setIsOpen] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [isPending, startTransition] = useTransition();
@@ -33,9 +35,7 @@ export function DeleteProductButton({ id, name }: DeleteProductButtonProps) {
         await deleteProduct(id);
         setIsOpen(false);
       } catch (e) {
-        setError(
-          e instanceof Error ? e.message : "Nie udało się usunąć produktu.",
-        );
+        setError(e instanceof Error ? e.message : t("deleteFailed"));
       }
     });
   };
@@ -47,7 +47,7 @@ export function DeleteProductButton({ id, name }: DeleteProductButtonProps) {
         type="button"
         className="btn btn-danger btn-sm"
       >
-        Usuń
+        {t("delete")}
       </button>
 
       {isOpen && (
@@ -65,10 +65,13 @@ export function DeleteProductButton({ id, name }: DeleteProductButtonProps) {
             onClick={(event) => event.stopPropagation()}
           >
             <h3 id={`delete-product-title-${id}`} className="mb-2">
-              Potwierdź usunięcie
+              {t("deleteTitle")}
             </h3>
             <p className="mb-4">
-              Czy na pewno chcesz usunąć produkt <strong>{name}</strong>?
+              {t.rich("deleteConfirm", {
+                name,
+                strong: (chunks) => <strong>{chunks}</strong>,
+              })}
             </p>
 
             {error && <div className="alert alert-error mb-4">{error}</div>}
@@ -80,7 +83,7 @@ export function DeleteProductButton({ id, name }: DeleteProductButtonProps) {
                 onClick={() => setIsOpen(false)}
                 disabled={isPending}
               >
-                Anuluj
+                {t("cancel")}
               </button>
               <button
                 type="button"
@@ -88,7 +91,7 @@ export function DeleteProductButton({ id, name }: DeleteProductButtonProps) {
                 onClick={handleConfirmDelete}
                 disabled={isPending}
               >
-                {isPending ? "Usuwanie..." : "Tak, usuń"}
+                {isPending ? t("deleting") : t("deleteYes")}
               </button>
             </div>
           </div>

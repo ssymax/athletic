@@ -1,1 +1,54 @@
-{}
+{
+  "errors": {
+    "adminRequired": "Administrator permissions required",
+    "requiredFields": "Please fill in all required fields",
+    "timeNeedsDays": "Time-based memberships require days validity",
+    "entryNeedsEntries": "Entry-based memberships require number of entries",
+    "inUse": "Cannot delete a membership type that has already been sold.",
+    "deleteFailed": "Failed to delete membership type.",
+    "generic": "Something went wrong"
+  },
+  "list": {
+    "title": "Membership Types",
+    "add": "Add Membership Type",
+    "colName": "Name",
+    "colType": "Type",
+    "colValidity": "Validity",
+    "colPrice": "Price",
+    "colActions": "Actions",
+    "empty": "No membership types defined.",
+    "typeTime": "Time-based",
+    "typeEntry": "Entry-based",
+    "validityTime": "{days, plural, one {# day} other {# days}}",
+    "validityEntry": "{entries, plural, one {# entry} other {# entries}}",
+    "validityEntryWithDays": "{entries, plural, one {# entry} other {# entries}} / {days, plural, one {# day} other {# days}}"
+  },
+  "delete": {
+    "button": "Delete",
+    "confirmTitle": "Confirm deletion",
+    "confirmText": "Are you sure you want to delete the membership type <strong>{name}</strong>?",
+    "cancel": "Cancel",
+    "confirm": "Yes, delete",
+    "pending": "Deleting..."
+  },
+  "form": {
+    "back": "← Back",
+    "title": "New Membership Type",
+    "name": "Name",
+    "namePlaceholder": "e.g. Open Membership 30 days",
+    "scope": "Scope",
+    "scopeGYM": "Gym",
+    "scopeCLASSES": "Classes",
+    "scopeALL": "Gym + Classes",
+    "billingType": "Billing type",
+    "typeTIME": "Time-based (days)",
+    "typeENTRY": "Entry-based (count)",
+    "daysValid": "Validity (days)",
+    "entries": "Number of entries",
+    "daysLimit": "Validity limit (days)",
+    "daysLimitHint": "An entry-based membership expires after this many days from its start date (default {days, plural, one {# day} other {# days}}).",
+    "price": "Price (PLN)",
+    "cancel": "Cancel",
+    "create": "Create"
+  }
+}

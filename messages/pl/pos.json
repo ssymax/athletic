@@ -1,1 +1,17 @@
-{}
+{
+  "title": "Sprzedaż",
+  "stock": "Stan: {count}",
+  "cart": "Koszyk",
+  "cartEmpty": "Koszyk jest pusty",
+  "itemLine": "{price} zł x {quantity}",
+  "toPay": "Do zapłaty:",
+  "saleSuccess": "Sprzedaż zakończona pomyślnie!",
+  "cash": "Gotówka",
+  "card": "Karta",
+  "processing": "Przetwarzanie...",
+  "checkout": "Zatwierdź i Zapłać",
+  "errors": {
+    "cartEmpty": "Cart is empty",
+    "transactionFailed": "Transaction failed"
+  }
+}

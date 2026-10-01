@@ -4,6 +4,7 @@ import prisma from "@/lib/db";
 import { revalidatePath } from "next/cache";
 import { auth } from "@/auth";
 import bcrypt from "bcryptjs";
+import { getTranslations } from "next-intl/server";
 
 const VALID_ROLES = ["ADMIN", "RECEPTION"] as const;
 type UserRole = (typeof VALID_ROLES)[number];
@@ -11,20 +12,23 @@ type UserRole = (typeof VALID_ROLES)[number];
 async function assertAdmin() {
   const session = await auth();
   if (session?.user?.role !== "ADMIN") {
-    throw new Error("Brak uprawnień administratora");
+    const t = await getTranslations("users");
+    throw new Error(t("errors.adminRequired"));
   }
 }
 
-function parseRole(role: string): UserRole {
+async function parseRole(role: string): Promise<UserRole> {
   if (VALID_ROLES.includes(role as UserRole)) {
     return role as UserRole;
   }
-  throw new Error("Nieprawidłowa rola użytkownika");
+  const t = await getTranslations("users");
+  throw new Error(t("errors.invalidRole"));
 }
 
-function ensureNonEmpty(value: string, label: string) {
+async function ensureNonEmpty(value: string, label: string) {
   if (!value.trim()) {
-    throw new Error(`${label} jest wymagany`);
+    const t = await getTranslations("users");
+    throw new Error(t("errors.required", { label }));
   }
 }
 
@@ -64,15 +68,16 @@ export async function createUser(formData: FormData) {
   const username = (formData.get("username") as string) || "";
   const password = (formData.get("password") as string) || "";
   const roleRaw = (formData.get("role") as string) || "";
+  const t = await getTranslations("users");
 
-  ensureNonEmpty(username, "Login");
-  ensureNonEmpty(password, "Hasło");
+  await ensureNonEmpty(username, t("fields.username"));
+  await ensureNonEmpty(password, t("fields.password"));
 
   if (password.length < 6) {
-    throw new Error("Hasło musi mieć minimum 6 znaków");
+    throw new Error(t("errors.passwordTooShort"));
   }
 
-  const role = parseRole(roleRaw);
+  const role = await parseRole(roleRaw);
   const hashedPassword = await bcrypt.hash(password, 10);
 
   try {
@@ -90,7 +95,7 @@ export async function createUser(formData: FormData) {
       "code" in error &&
       error.code === "P2002"
     ) {
-      throw new Error("Użytkownik o takim loginie już istnieje");
+      throw new Error(t("errors.duplicate"));
     }
     throw error;
   }
@@ -105,8 +110,10 @@ export async function updateUser(id: string, formData: FormData) {
   const password = (formData.get("password") as string) || "";
   const roleRaw = (formData.get("role") as string) || "";
 
-  ensureNonEmpty(username, "Login");
-  const role = parseRole(roleRaw);
+  const t = await getTranslations("users");
+
+  await ensureNonEmpty(username, t("fields.username"));
+  const role = await parseRole(roleRaw);
 
   const data: {
     username: string;
@@ -119,7 +126,7 @@ export async function updateUser(id: string, formData: FormData) {
 
   if (password.trim()) {
     if (password.length < 6) {
-      throw new Error("Hasło musi mieć minimum 6 znaków");
+      throw new Error(t("errors.passwordTooShort"));
     }
     data.password = await bcrypt.hash(password, 10);
   }
@@ -136,7 +143,7 @@ export async function updateUser(id: string, formData: FormData) {
       "code" in error &&
       error.code === "P2002"
     ) {
-      throw new Error("Użytkownik o takim loginie już istnieje");
+      throw new Error(t("errors.duplicate"));
     }
     throw error;
   }

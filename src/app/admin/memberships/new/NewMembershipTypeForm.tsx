@@ -5,8 +5,10 @@ import { DEFAULT_DAYS_VALID } from "@/lib/memberships";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
+import { useTranslations } from "next-intl";
 
 export default function NewMembershipTypeForm() {
+  const t = useTranslations("membershipTypes");
   const router = useRouter();
   const [error, setError] = useState<string | null>(null);
   const [type, setType] = useState<string>("TIME");
@@ -16,7 +18,7 @@ export default function NewMembershipTypeForm() {
       await createMembershipType(formData);
       router.push("/admin/memberships");
     } catch (e) {
-      setError(e instanceof Error ? e.message : "Something went wrong");
+      setError(e instanceof Error ? e.message : t("errors.generic"));
     }
   }
 
@@ -27,9 +29,9 @@ export default function NewMembershipTypeForm() {
           href="/admin/memberships"
           className="text-muted-foreground hover:text-foreground"
         >
-          ← Wróć
+          {t("form.back")}
         </Link>
-        <h1 className="text-2xl font-bold">Nowy Typ Karnetu</h1>
+        <h1 className="text-2xl font-bold">{t("form.title")}</h1>
       </div>
 
       <div className="card">
@@ -38,7 +40,7 @@ export default function NewMembershipTypeForm() {
 
           <div className="form-group">
             <label htmlFor="name" className="label">
-              Nazwa
+              {t("form.name")}
             </label>
             <input
               type="text"
@@ -46,25 +48,25 @@ export default function NewMembershipTypeForm() {
               name="name"
               required
               className="input"
-              placeholder="np. Karnet Open 30 dni"
+              placeholder={t("form.namePlaceholder")}
             />
           </div>
 
           <div className="grid grid-cols-2 gap-4">
             <div className="form-group">
               <label htmlFor="scope" className="label">
-                Zakres
+                {t("form.scope")}
               </label>
               <select name="scope" id="scope" className="input">
-                <option value="GYM">Siłownia</option>
-                <option value="CLASSES">Zajęcia</option>
-                <option value="ALL">Siłownia + Zajęcia</option>
+                <option value="GYM">{t("form.scopeGYM")}</option>
+                <option value="CLASSES">{t("form.scopeCLASSES")}</option>
+                <option value="ALL">{t("form.scopeALL")}</option>
               </select>
             </div>
 
             <div className="form-group">
               <label htmlFor="type" className="label">
-                Typ rozliczenia
+                {t("form.billingType")}
               </label>
               <select
                 name="type"
@@ -73,8 +75,8 @@ export default function NewMembershipTypeForm() {
                 value={type}
                 onChange={(e) => setType(e.target.value)}
               >
-                <option value="TIME">Czasowy (dni)</option>
-                <option value="ENTRY">Wejściowy (ilość)</option>
+                <option value="TIME">{t("form.typeTIME")}</option>
+                <option value="ENTRY">{t("form.typeENTRY")}</option>
               </select>
             </div>
           </div>
@@ -82,7 +84,7 @@ export default function NewMembershipTypeForm() {
           {type === "TIME" ? (
             <div className="form-group">
               <label htmlFor="daysValid" className="label">
-                Liczba dni ważności
+                {t("form.daysValid")}
               </label>
               <input
                 type="number"
@@ -98,7 +100,7 @@ export default function NewMembershipTypeForm() {
             <>
               <div className="form-group">
                 <label htmlFor="entries" className="label">
-                  Liczba wejść
+                  {t("form.entries")}
                 </label>
                 <input
                   type="number"
@@ -111,7 +113,7 @@ export default function NewMembershipTypeForm() {
               </div>
               <div className="form-group">
                 <label htmlFor="daysValid" className="label">
-                  Limit dni ważności
+                  {t("form.daysLimit")}
                 </label>
                 <input
                   type="number"
@@ -122,8 +124,7 @@ export default function NewMembershipTypeForm() {
                   defaultValue={DEFAULT_DAYS_VALID}
                 />
                 <p className="text-xs text-muted-foreground mt-1">
-                  Karnet wejściowy wygaśnie po tylu dniach od daty rozpoczęcia
-                  (domyślnie {DEFAULT_DAYS_VALID} dni).
+                  {t("form.daysLimitHint", { days: DEFAULT_DAYS_VALID })}
                 </p>
               </div>
             </>
@@ -131,7 +132,7 @@ export default function NewMembershipTypeForm() {
 
           <div className="form-group">
             <label htmlFor="price" className="label">
-              Cena (PLN)
+              {t("form.price")}
             </label>
             <input
               type="number"
@@ -146,10 +147,10 @@ export default function NewMembershipTypeForm() {
 
           <div className="flex justify-end gap-3 pt-4">
             <Link href="/admin/memberships" className="btn btn-secondary">
-              Anuluj
+              {t("form.cancel")}
             </Link>
             <button type="submit" className="btn btn-primary">
-              Stwórz
+              {t("form.create")}
             </button>
           </div>
         </form>

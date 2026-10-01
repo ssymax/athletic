@@ -3,6 +3,7 @@
 import { getProducts } from "@/app/actions/products";
 import { processSale } from "@/app/actions/pos";
 import { useEffect, useState } from "react";
+import { useTranslations } from "next-intl";
 
 interface Product {
   id: string;
@@ -17,6 +18,7 @@ interface CartItem extends Product {
 }
 
 export default function POSPage() {
+  const t = useTranslations("pos");
   const [products, setProducts] = useState<Product[]>([]);
   const [cart, setCart] = useState<CartItem[]>([]);
   const [paymentMethod, setPaymentMethod] = useState("CASH");
@@ -81,7 +83,7 @@ export default function POSPage() {
       setTimeout(() => setSuccess(false), 3000);
       getProducts().then(setProducts);
     } catch (e) {
-      setError(e instanceof Error ? e.message : "Transaction failed");
+      setError(e instanceof Error ? e.message : t("errors.transactionFailed"));
     } finally {
       setProcessing(false);
     }
@@ -90,7 +92,7 @@ export default function POSPage() {
   return (
     <div className="fade-in pos-layout">
       <div className="pos-products">
-        <h1 className="mb-6">Sprzedaż</h1>
+        <h1 className="mb-6">{t("title")}</h1>
 
         <div className="grid grid-cols-3 gap-4">
           {products.map((product) => (
@@ -113,7 +115,7 @@ export default function POSPage() {
                 <span
                   className={`stock-pill ${product.stock < 10 ? "stock-pill--low" : ""}`}
                 >
-                  Stan: {product.stock}
+                  {t("stock", { count: product.stock })}
                 </span>
               </div>
             </button>
@@ -122,14 +124,14 @@ export default function POSPage() {
       </div>
 
       <div className="card pos-cart">
-        <h2 className="mb-6">Koszyk</h2>
+        <h2 className="mb-6">{t("cart")}</h2>
 
         <div className="flex-1 overflow-y-auto mb-6">
           {cart.length === 0 ? (
             <div className="cart-empty">
               <div>
                 <div className="text-2xl mb-2">🛒</div>
-                <p>Koszyk jest pusty</p>
+                <p>{t("cartEmpty")}</p>
               </div>
             </div>
           ) : (
@@ -139,7 +141,10 @@ export default function POSPage() {
                   <div className="flex-1 min-w-0">
                     <p className="font-medium text-sm">{item.name}</p>
                     <p className="text-xs text-muted">
-                      {item.price.toFixed(2)} zł x {item.quantity}
+                      {t("itemLine", {
+                        price: item.price.toFixed(2),
+                        quantity: item.quantity,
+                      })}
                     </p>
                   </div>
                   <div className="flex items-center gap-3">
@@ -173,7 +178,7 @@ export default function POSPage() {
 
         <div className="section-divider">
           <div className="flex justify-between items-center mb-6">
-            <span className="font-medium text-muted">Do zapłaty:</span>
+            <span className="font-medium text-muted">{t("toPay")}</span>
             <span className="total-value">
               {total.toFixed(2)} <small>PLN</small>
             </span>
@@ -182,9 +187,7 @@ export default function POSPage() {
           {error && <div className="alert alert-error mb-4">{error}</div>}
 
           {success && (
-            <div className="alert alert-success mb-4">
-              Sprzedaż zakończona pomyślnie!
-            </div>
+            <div className="alert alert-success mb-4">{t("saleSuccess")}</div>
           )}
 
           <div className="flex flex-col gap-3">
@@ -193,8 +196,8 @@ export default function POSPage() {
               value={paymentMethod}
               onChange={(e) => setPaymentMethod(e.target.value)}
             >
-              <option value="CASH">Gotówka</option>
-              <option value="CARD">Karta</option>
+              <option value="CASH">{t("cash")}</option>
+              <option value="CARD">{t("card")}</option>
             </select>
 
             <button
@@ -202,7 +205,7 @@ export default function POSPage() {
               disabled={cart.length === 0 || processing || success}
               className="btn btn-primary btn-full"
             >
-              {processing ? "Przetwarzanie..." : "Zatwierdź i Zapłać"}
+              {processing ? t("processing") : t("checkout")}
             </button>
           </div>
         </div>

@@ -1,29 +1,11 @@
 import { getMember } from "@/app/actions/members";
 import Link from "next/link";
+import { getFormatter, getTranslations } from "next-intl/server";
 import { notFound } from "next/navigation";
 import { DeleteMemberButton } from "./components/DeleteMemberButton";
 import { Button } from "@/components/ui/Button";
 import { Card } from "@/components/ui/Card";
 import { daysLeft, isMembershipValid, memberStatus } from "@/lib/memberships";
-
-const formatDate = (date: Date | string | null | undefined) =>
-  date ? new Date(date).toLocaleDateString("pl-PL") : "-";
-
-function validityLabel(endDate: Date | null) {
-  const left = daysLeft(endDate);
-  if (left === null) return "bezterminowo";
-  if (left < 0) return `wygasł ${Math.abs(left)} dni temu`;
-  if (left === 0) return "wygasa dziś";
-  if (left === 1) return "został 1 dzień";
-  return `zostało ${left} dni`;
-}
-
-function statusLabel(status: string) {
-  if (status === "ACTIVE") return "Aktywny";
-  if (status === "EXPIRED") return "Wygasły";
-  if (status === "CANCELLED") return "Anulowany";
-  return status;
-}
 
 function statusBadge(status: string) {
   if (status === "ACTIVE") return "badge-success";
@@ -37,6 +19,26 @@ export default async function MemberDetailsPage({
   params: Promise<{ id: string }>;
 }) {
   const { id } = await params;
+  const t = await getTranslations("members");
+  const tm = await getTranslations("memberships");
+  const format = await getFormatter();
+  const formatDate = (date: Date | string | null | undefined) =>
+    date
+      ? format.dateTime(new Date(date), {
+          day: "numeric",
+          month: "numeric",
+          year: "numeric",
+        })
+      : "-";
+  const validityLabel = (endDate: Date | null) => {
+    const left = daysLeft(endDate);
+    if (left === null) return t("detail.indefinite");
+    if (left < 0) return t("detail.expiredAgo", { days: Math.abs(left) });
+    if (left === 0) return t("detail.expiresToday");
+    return t("detail.daysLeft", { days: left });
+  };
+  const statusLabel = (status: string) =>
+    tm.has(`status.${status}`) ? tm(`status.${status}`) : status;
   const member = await getMember(id);
 
   if (!member) {
@@ -52,24 +54,26 @@ export default async function MemberDetailsPage({
     <div className="fade-in">
       <div className="flex items-center gap-4 mb-6">
         <Link href="/members" className="text-muted">
-          ← Wróć
+          {t("back")}
         </Link>
         <h1>
           {member.firstName} {member.lastName}
         </h1>
-        <span className={`badge ${status.badgeClass}`}>{status.label}</span>
+        <span className={`badge ${status.badgeClass}`}>
+          {t(status.labelKey)}
+        </span>
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
         <div className="md:col-span-1 space-y-6">
-          <Card title="Dane Klubowicza">
+          <Card title={t("detail.memberData")}>
             <div className="space-y-4">
               <div>
-                <span className="label text-muted">Numer telefonu</span>
+                <span className="label text-muted">{t("detail.phone")}</span>
                 <p className="font-medium">{member.phoneNumber}</p>
               </div>
               <div>
-                <span className="label text-muted">Notatki</span>
+                <span className="label text-muted">{t("detail.notes")}</span>
                 <p className="whitespace-pre-wrap">{member.notes || "-"}</p>
               </div>
               <div className="flex flex-col gap-2 pt-4">
@@ -77,7 +81,7 @@ export default async function MemberDetailsPage({
                   href={`/members/${id}/edit`}
                   className="btn btn-outline w-full"
                 >
-                  Edytuj dane
+                  {t("detail.edit")}
                 </Link>
                 <DeleteMemberButton
                   id={member.id}
@@ -91,9 +95,11 @@ export default async function MemberDetailsPage({
         <div className="md:col-span-2 space-y-6">
           <div className="card">
             <div className="flex justify-between items-center mb-4">
-              <h3 className="text-xl font-semibold">Karnety</h3>
+              <h3 className="text-xl font-semibold">
+                {t("detail.memberships")}
+              </h3>
               <Link href={`/members/${id}/memberships/new`}>
-                <Button size="sm">Sprzedaj Karnet</Button>
+                <Button size="sm">{t("detail.sell")}</Button>
               </Link>
             </div>
 
@@ -101,12 +107,12 @@ export default async function MemberDetailsPage({
               <table className="table">
                 <thead>
                   <tr>
-                    <th>Typ</th>
-                    <th>Data zakupu</th>
-                    <th>Okres ważności</th>
-                    <th>Pozostało</th>
-                    <th>Status</th>
-                    <th>Cena</th>
+                    <th>{t("detail.type")}</th>
+                    <th>{t("detail.purchaseDate")}</th>
+                    <th>{t("detail.validityPeriod")}</th>
+                    <th>{t("detail.remaining")}</th>
+                    <th>{t("detail.status")}</th>
+                    <th>{t("detail.price")}</th>
                     <th></th>
                   </tr>
                 </thead>
@@ -114,7 +120,7 @@ export default async function MemberDetailsPage({
                   {member.memberships.length === 0 ? (
                     <tr>
                       <td colSpan={7} className="table-empty">
-                        Brak historii karnetów.
+                        {t("detail.noHistory")}
                       </td>
                     </tr>
                   ) : (
@@ -128,11 +134,15 @@ export default async function MemberDetailsPage({
                           {formatDate(membership.startDate)} -{" "}
                           {membership.endDate
                             ? formatDate(membership.endDate)
-                            : "bezterminowo"}
+                            : t("detail.indefinite")}
                         </td>
                         <td className="whitespace-nowrap">
                           {membership.type.type === "ENTRY" && (
-                            <div>{membership.remainingEntries} wejść</div>
+                            <div>
+                              {t("detail.entries", {
+                                count: membership.remainingEntries ?? 0,
+                              })}
+                            </div>
                           )}
                           {membership.status === "ACTIVE" &&
                             membership.endDate && (
@@ -149,14 +159,16 @@ export default async function MemberDetailsPage({
                           </span>
                         </td>
                         <td className="whitespace-nowrap">
-                          {membership.pricePaid.toFixed(2)} zł
+                          {t("detail.priceValue", {
+                            price: membership.pricePaid.toFixed(2),
+                          })}
                         </td>
                         <td>
                           <Link
                             href={`/members/${id}/memberships/${membership.id}/edit`}
                             className="text-primary text-sm font-medium"
                           >
-                            Edytuj
+                            {t("detail.editMembership")}
                           </Link>
                         </td>
                       </tr>

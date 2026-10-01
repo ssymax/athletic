@@ -1,1 +1,44 @@
-{}
+{
+  "errors": {
+    "adminRequired": "Brak uprawnień administratora",
+    "invalidRole": "Nieprawidłowa rola użytkownika",
+    "required": "{label} jest wymagany",
+    "passwordTooShort": "Hasło musi mieć minimum 6 znaków",
+    "duplicate": "Użytkownik o takim loginie już istnieje",
+    "createFailed": "Nie udało się utworzyć użytkownika",
+    "saveFailed": "Nie udało się zapisać zmian"
+  },
+  "fields": {
+    "username": "Login",
+    "password": "Hasło"
+  },
+  "roles": {
+    "ADMIN": "Administrator",
+    "RECEPTION": "Recepcjonista"
+  },
+  "list": {
+    "title": "Użytkownicy",
+    "add": "Dodaj użytkownika",
+    "colUsername": "Login",
+    "colRole": "Rola",
+    "colCreated": "Utworzony",
+    "colActions": "Akcje",
+    "empty": "Brak użytkowników.",
+    "edit": "Edytuj"
+  },
+  "form": {
+    "back": "← Wróć",
+    "newTitle": "Nowy użytkownik",
+    "editTitle": "Edytuj użytkownika",
+    "username": "Login",
+    "usernamePlaceholder": "np. recepcja2",
+    "password": "Hasło",
+    "passwordPlaceholder": "Minimum 6 znaków",
+    "newPassword": "Nowe hasło",
+    "newPasswordPlaceholder": "Zostaw puste, aby nie zmieniać",
+    "role": "Rola",
+    "cancel": "Anuluj",
+    "create": "Dodaj użytkownika",
+    "save": "Zapisz zmiany"
+  }
+}

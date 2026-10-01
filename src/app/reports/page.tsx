@@ -1,7 +1,9 @@
 import { getSalesReport, getExpiringMemberships } from "@/app/actions/reports";
+import { EXPIRY_REMINDER_DAYS } from "@/lib/memberships";
 import { Button } from "@/components/ui/Button";
 import { auth } from "@/auth";
 import { redirect } from "next/navigation";
+import { getFormatter, getTranslations } from "next-intl/server";
 
 type ReportsPreset = "weekly" | "monthly" | "custom";
 
@@ -47,6 +49,15 @@ export default async function ReportsPage({
     redirect("/dashboard");
   }
 
+  const t = await getTranslations("reports");
+  const format = await getFormatter();
+  const formatDate = (date: Date) =>
+    format.dateTime(date, {
+      year: "numeric",
+      month: "numeric",
+      day: "numeric",
+    });
+  const money = (amount: number) => t("money", { amount: amount.toFixed(2) });
   const params = await searchParams;
   const today = new Date();
 
@@ -89,14 +100,14 @@ export default async function ReportsPage({
 
   return (
     <div className="fade-in">
-      <h1 className="mb-6">Raporty i Statystyki</h1>
+      <h1 className="mb-6">{t("title")}</h1>
 
       <div className="card mb-6">
         <div className="flex flex-wrap items-end gap-2">
           <form className="flex flex-wrap items-end gap-2">
             <input type="hidden" name="preset" value="custom" />
             <div>
-              <label htmlFor="start">Od</label>
+              <label htmlFor="start">{t("from")}</label>
               <input
                 id="start"
                 type="date"
@@ -106,7 +117,7 @@ export default async function ReportsPage({
               />
             </div>
             <div>
-              <label htmlFor="end">Do</label>
+              <label htmlFor="end">{t("to")}</label>
               <input
                 id="end"
                 type="date"
@@ -116,7 +127,7 @@ export default async function ReportsPage({
               />
             </div>
             <Button type="submit" size="sm">
-              Pokaż
+              {t("show")}
             </Button>
           </form>
 
@@ -137,7 +148,7 @@ export default async function ReportsPage({
               size="sm"
               variant={presetParam === "weekly" ? "secondary" : "ghost"}
             >
-              Tygodniowy
+              {t("weekly")}
             </Button>
           </form>
 
@@ -158,7 +169,7 @@ export default async function ReportsPage({
               size="sm"
               variant={presetParam === "monthly" ? "secondary" : "ghost"}
             >
-              Miesięczny
+              {t("monthly")}
             </Button>
           </form>
 
@@ -171,7 +182,7 @@ export default async function ReportsPage({
               size="sm"
               variant={presetParam === "custom" ? "secondary" : "ghost"}
             >
-              Zakres własny
+              {t("custom")}
             </Button>
           </form>
         </div>
@@ -180,25 +191,24 @@ export default async function ReportsPage({
       <div className="grid grid-cols-2 gap-6 mb-8">
         <div className="card">
           <div className="flex justify-between items-center mb-6">
-            <h2>Sprzedaż w Zakresie</h2>
+            <h2>{t("salesInRange")}</h2>
             <span className="text-sm text-muted">
-              {rangeStart.toLocaleDateString("pl-PL")} -{" "}
-              {rangeEnd.toLocaleDateString("pl-PL")}
+              {formatDate(rangeStart)} - {formatDate(rangeEnd)}
             </span>
           </div>
 
           <div className="grid grid-cols-2 gap-4 mb-8">
             <div className="panel-soft">
               <p className="text-xs text-muted font-medium uppercase tracking-wider mb-1">
-                Łączny Przychód
+                {t("totalRevenue")}
               </p>
               <p className="stat-value stat-value-highlight">
-                {report.totalSales.toFixed(2)} PLN
+                {t("totalAmount", { amount: report.totalSales.toFixed(2) })}
               </p>
             </div>
             <div className="panel-soft">
               <p className="text-xs text-muted font-medium uppercase tracking-wider mb-1">
-                Liczba transakcji
+                {t("transactionCount")}
               </p>
               <p className="stat-value">
                 {report.salesCount + report.membershipsCount}
@@ -209,38 +219,40 @@ export default async function ReportsPage({
           <div className="grid grid-cols-2 gap-8">
             <div>
               <p className="text-xs text-muted font-medium uppercase tracking-wider mb-4">
-                Wg Metody Płatności
+                {t("byPaymentMethod")}
               </p>
               <div className="flex justify-between py-2 stat-line">
-                <span className="text-sm">Gotówka</span>
+                <span className="text-sm">{t("cash")}</span>
                 <span className="text-sm font-bold">
-                  {report.byMethod.CASH.toFixed(2)} zł
+                  {money(report.byMethod.CASH)}
                 </span>
               </div>
               <div className="flex justify-between py-2 stat-line">
-                <span className="text-sm">Karta</span>
+                <span className="text-sm">{t("card")}</span>
                 <span className="text-sm font-bold">
-                  {report.byMethod.CARD.toFixed(2)} zł
+                  {money(report.byMethod.CARD)}
                 </span>
               </div>
             </div>
 
             <div>
               <p className="text-xs text-muted font-medium uppercase tracking-wider mb-4">
-                Wg Typu
+                {t("byType")}
               </p>
               <div className="flex justify-between py-2 stat-line">
                 <span className="text-sm">
-                  Karnety ({report.membershipsCount})
+                  {t("membershipsCount", { count: report.membershipsCount })}
                 </span>
                 <span className="text-sm font-bold">
-                  {report.membershipsTotal.toFixed(2)} zł
+                  {money(report.membershipsTotal)}
                 </span>
               </div>
               <div className="flex justify-between py-2 stat-line">
-                <span className="text-sm">Produkty ({report.salesCount})</span>
+                <span className="text-sm">
+                  {t("productsCount", { count: report.salesCount })}
+                </span>
                 <span className="text-sm font-bold">
-                  {report.productsTotal.toFixed(2)} zł
+                  {money(report.productsTotal)}
                 </span>
               </div>
             </div>
@@ -249,21 +261,19 @@ export default async function ReportsPage({
 
         <div className="card">
           <h2 className="mb-6">
-            Wygasające Karnety{" "}
-            <span className="text-sm text-muted">(7 dni)</span>
+            {t("expiringTitle")}{" "}
+            <span className="text-sm text-muted">{t("expiringDays", { days: EXPIRY_REMINDER_DAYS })}</span>
           </h2>
           {expiringMemberships.length === 0 ? (
-            <p className="text-muted table-empty">
-              Brak wygasających karnetów.
-            </p>
+            <p className="text-muted table-empty">{t("expiringEmpty")}</p>
           ) : (
             <div className="table-wrap">
               <table className="table">
                 <thead>
                   <tr>
-                    <th>Klubowicz</th>
-                    <th>Karnet</th>
-                    <th>Wygasa</th>
+                    <th>{t("colMember")}</th>
+                    <th>{t("colMembership")}</th>
+                    <th>{t("colExpires")}</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -275,9 +285,7 @@ export default async function ReportsPage({
                       <td>{m.type.name}</td>
                       <td>
                         <span className="badge badge-danger">
-                          {m.endDate
-                            ? new Date(m.endDate).toLocaleDateString()
-                            : "-"}
+                          {m.endDate ? formatDate(new Date(m.endDate)) : "-"}
                         </span>
                       </td>
                     </tr>
@@ -291,19 +299,17 @@ export default async function ReportsPage({
 
       <div className="grid grid-cols-2 gap-6">
         <div className="card">
-          <h2 className="mb-4">Produkty w Zakresie</h2>
+          <h2 className="mb-4">{t("productsInRange")}</h2>
           {report.productsList.length === 0 ? (
-            <p className="text-muted table-empty">
-              Brak sprzedaży produktów w wybranym zakresie.
-            </p>
+            <p className="text-muted table-empty">{t("productsEmpty")}</p>
           ) : (
             <div className="table-wrap">
               <table className="table">
                 <thead>
                   <tr>
-                    <th>Produkt</th>
-                    <th>Ilość</th>
-                    <th>Przychód</th>
+                    <th>{t("colProduct")}</th>
+                    <th>{t("colQuantity")}</th>
+                    <th>{t("colRevenue")}</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -311,7 +317,7 @@ export default async function ReportsPage({
                     <tr key={product.id}>
                       <td className="font-medium">{product.name}</td>
                       <td>{product.quantity}</td>
-                      <td>{product.revenue.toFixed(2)} zł</td>
+                      <td>{money(product.revenue)}</td>
                     </tr>
                   ))}
                 </tbody>
@@ -321,20 +327,18 @@ export default async function ReportsPage({
         </div>
 
         <div className="card">
-          <h2 className="mb-4">Karnety w Zakresie</h2>
+          <h2 className="mb-4">{t("membershipsInRange")}</h2>
           {report.membershipsList.length === 0 ? (
-            <p className="text-muted table-empty">
-              Brak sprzedaży karnetów w wybranym zakresie.
-            </p>
+            <p className="text-muted table-empty">{t("membershipsEmpty")}</p>
           ) : (
             <div className="table-wrap">
               <table className="table">
                 <thead>
                   <tr>
-                    <th>Karnet</th>
-                    <th>Typ</th>
-                    <th>Liczba</th>
-                    <th>Przychód</th>
+                    <th>{t("colMembership")}</th>
+                    <th>{t("colType")}</th>
+                    <th>{t("colCount")}</th>
+                    <th>{t("colRevenue")}</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -342,10 +346,12 @@ export default async function ReportsPage({
                     <tr key={membership.id}>
                       <td className="font-medium">{membership.name}</td>
                       <td>
-                        {membership.type === "TIME" ? "Czasowy" : "Wejściowy"}
+                        {membership.type === "TIME"
+                          ? t("typeTime")
+                          : t("typeEntries")}
                       </td>
                       <td>{membership.count}</td>
-                      <td>{membership.revenue.toFixed(2)} zł</td>
+                      <td>{money(membership.revenue)}</td>
                     </tr>
                   ))}
                 </tbody>

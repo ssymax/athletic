@@ -2,6 +2,7 @@
 
 import prisma from "@/lib/db";
 import { revalidatePath } from "next/cache";
+import { getTranslations } from "next-intl/server";
 import { isMembershipValid } from "@/lib/memberships";
 import { expireOutdatedMemberships } from "@/app/actions/memberships";
 
@@ -135,7 +136,8 @@ export async function createMember(formData: FormData) {
   const notes = formData.get("notes") as string;
 
   if (!firstName || !lastName || !phoneNumber) {
-    throw new Error("Please fill in all required fields");
+    const t = await getTranslations("members");
+    throw new Error(t("errors.fillRequired"));
   }
 
   await prisma.member.create({

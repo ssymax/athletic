@@ -3,11 +3,13 @@
 import prisma from "@/lib/db";
 import { revalidatePath } from "next/cache";
 import { auth } from "@/auth";
+import { getTranslations } from "next-intl/server";
 
 async function assertAdmin() {
   const session = await auth();
   if (session?.user?.role !== "ADMIN") {
-    throw new Error("Brak uprawnień administratora");
+    const t = await getTranslations("products");
+    throw new Error(t("errors.adminRequired"));
   }
 }
 
@@ -32,7 +34,8 @@ export async function createProduct(formData: FormData) {
   const stock = parseInt(formData.get("stock") as string) || 0;
 
   if (!name || !category || isNaN(price)) {
-    throw new Error("Please fill in all required fields");
+    const t = await getTranslations("products");
+    throw new Error(t("errors.requiredFields"));
   }
 
   await prisma.product.create({

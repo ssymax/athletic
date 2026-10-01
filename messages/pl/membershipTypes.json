@@ -1,1 +1,54 @@
-{}
+{
+  "errors": {
+    "adminRequired": "Brak uprawnień administratora",
+    "requiredFields": "Please fill in all required fields",
+    "timeNeedsDays": "Time-based memberships require days validity",
+    "entryNeedsEntries": "Entry-based memberships require number of entries",
+    "inUse": "Nie można usunąć karnetu, który był już sprzedany.",
+    "deleteFailed": "Nie udało się usunąć karnetu.",
+    "generic": "Something went wrong"
+  },
+  "list": {
+    "title": "Definicje Karnetów",
+    "add": "Dodaj Typ Karnetu",
+    "colName": "Nazwa",
+    "colType": "Typ",
+    "colValidity": "Ważność",
+    "colPrice": "Cena",
+    "colActions": "Akcje",
+    "empty": "Brak zdefiniowanych karnetów.",
+    "typeTime": "Czasowy",
+    "typeEntry": "Wejściowy",
+    "validityTime": "{days} dni",
+    "validityEntry": "{entries} wejść",
+    "validityEntryWithDays": "{entries} wejść / {days} dni"
+  },
+  "delete": {
+    "button": "Usuń",
+    "confirmTitle": "Potwierdź usunięcie",
+    "confirmText": "Czy na pewno chcesz usunąć karnet <strong>{name}</strong>?",
+    "cancel": "Anuluj",
+    "confirm": "Tak, usuń",
+    "pending": "Usuwanie..."
+  },
+  "form": {
+    "back": "← Wróć",
+    "title": "Nowy Typ Karnetu",
+    "name": "Nazwa",
+    "namePlaceholder": "np. Karnet Open 30 dni",
+    "scope": "Zakres",
+    "scopeGYM": "Siłownia",
+    "scopeCLASSES": "Zajęcia",
+    "scopeALL": "Siłownia + Zajęcia",
+    "billingType": "Typ rozliczenia",
+    "typeTIME": "Czasowy (dni)",
+    "typeENTRY": "Wejściowy (ilość)",
+    "daysValid": "Liczba dni ważności",
+    "entries": "Liczba wejść",
+    "daysLimit": "Limit dni ważności",
+    "daysLimitHint": "Karnet wejściowy wygaśnie po tylu dniach od daty rozpoczęcia (domyślnie {days} dni).",
+    "price": "Cena (PLN)",
+    "cancel": "Anuluj",
+    "create": "Stwórz"
+  }
+}

@@ -1,1 +1,76 @@
-{}
+{
+  "title": "Klubowicze",
+  "add": "Dodaj Klubowicza",
+  "searchPlaceholder": "Szukaj po nazwisku lub numerze...",
+  "search": "Szukaj",
+  "columns": {
+    "name": "Imię i Nazwisko",
+    "phone": "Telefon",
+    "membership": "Karnet",
+    "remaining": "Pozostało / Wygasa",
+    "status": "Status",
+    "notes": "Notatki",
+    "actions": "Akcje"
+  },
+  "empty": "Brak klubowiczów. Dodaj pierwszego!",
+  "noActiveMembership": "Brak aktywnego karnetu",
+  "expiresNoDate": "Wygasa: -",
+  "expires": "Wygasa: {date}",
+  "remainingEntries": "Pozostało: {count, plural, one {# wejście} few {# wejścia} many {# wejść} other {# wejścia}}",
+  "warnToday": "Kończy się dziś",
+  "warnTomorrow": "Kończy się jutro",
+  "warnDays": "Kończy się za {days} dni",
+  "details": "Szczegóły",
+  "status": {
+    "inactive": "Nieaktywny",
+    "noValidMembership": "Brak ważnego karnetu",
+    "active": "Aktywny"
+  },
+  "back": "← Wróć",
+  "loading": "Ładowanie...",
+  "notFound": "Nie znaleziono klubowicza.",
+  "cancel": "Anuluj",
+  "save": "Zapisz",
+  "firstName": "Imię",
+  "lastName": "Nazwisko",
+  "phone": "Numer telefonu",
+  "notesOptional": "Notatki (opcjonalnie)",
+  "newTitle": "Nowy Klubowicz",
+  "editTitle": "Edytuj Klubowicza",
+  "memberActive": "Klubowicz aktywny",
+  "saveChanges": "Zapisz Zmiany",
+  "detail": {
+    "memberData": "Dane Klubowicza",
+    "phone": "Numer telefonu",
+    "notes": "Notatki",
+    "edit": "Edytuj dane",
+    "memberships": "Karnety",
+    "sell": "Sprzedaj Karnet",
+    "type": "Typ",
+    "purchaseDate": "Data zakupu",
+    "validityPeriod": "Okres ważności",
+    "remaining": "Pozostało",
+    "status": "Status",
+    "price": "Cena",
+    "noHistory": "Brak historii karnetów.",
+    "indefinite": "bezterminowo",
+    "entries": "{count, plural, one {# wejście} few {# wejścia} many {# wejść} other {# wejścia}}",
+    "expiredAgo": "{days, plural, one {wygasł # dzień temu} few {wygasł # dni temu} many {wygasł # dni temu} other {wygasł # dni temu}}",
+    "expiresToday": "wygasa dziś",
+    "daysLeft": "{days, plural, one {został # dzień} few {zostało # dni} many {zostało # dni} other {zostało # dni}}",
+    "priceValue": "{price} zł",
+    "editMembership": "Edytuj"
+  },
+  "delete": {
+    "button": "Usuń klubowicza",
+    "title": "Potwierdź usunięcie klubowicza",
+    "confirm": "Czy na pewno chcesz usunąć <strong>{name}</strong>?",
+    "deleting": "Usuwanie...",
+    "yes": "Tak, usuń",
+    "failed": "Nie udało się usunąć klubowicza."
+  },
+  "errors": {
+    "fillRequired": "Please fill in all required fields",
+    "generic": "Something went wrong"
+  }
+}

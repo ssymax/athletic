@@ -1,1 +1,24 @@
-{}
+{
+  "title": "Dashboard",
+  "activeMembers": "Active Members",
+  "salesToday": "Sales Today",
+  "activeMemberships": "Active Memberships",
+  "expiringTab": "Ending within {days} days ({count})",
+  "lapsedTab": "Lapsed 1–{days} days ({count})",
+  "lapsedEmpty": "No members whose membership ended in the last {days} days.",
+  "expiringEmpty": "No memberships ending in the next {days} days.",
+  "memberLine": "{type} · tel. {phone}",
+  "lapsedValidUntil": "valid until {date}",
+  "validUntil": "until {date}",
+  "expiresToday": "ends today",
+  "daysLeft": "{days, plural, one {# day left} other {# days left}}",
+  "lapsedSince": "{days, plural, one {no membership for # day} other {no membership for # days}}",
+  "recentCheckins": "Recent Check-ins",
+  "noRecentCheckins": "No recent check-ins.",
+  "viewAllCheckins": "View all check-ins →",
+  "quickActions": "Quick Actions",
+  "actionCheckin": "Check-in",
+  "actionSale": "Sale",
+  "actionAddMember": "Add Member",
+  "actionReports": "Reports"
+}

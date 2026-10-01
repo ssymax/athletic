@@ -93,17 +93,17 @@ describe("isMembershipValid", () => {
 
 describe("memberStatus", () => {
   it("marks a deactivated member as inactive", () => {
-    expect(memberStatus(false, true).label).toBe("Nieaktywny");
+    expect(memberStatus(false, true).labelKey).toBe("status.inactive");
   });
 
   it("never shows a member without a valid membership as active", () => {
     const status = memberStatus(true, false);
-    expect(status.label).toBe("Brak ważnego karnetu");
+    expect(status.labelKey).toBe("status.noValidMembership");
     expect(status.badgeClass).not.toBe("badge-success");
   });
 
   it("shows an active member with a valid membership as active", () => {
-    expect(memberStatus(true, true).label).toBe("Aktywny");
+    expect(memberStatus(true, true).labelKey).toBe("status.active");
   });
 });
 

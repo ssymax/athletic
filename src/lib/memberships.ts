@@ -72,15 +72,23 @@ export function isMembershipValid(
   );
 }
 
-export type MemberStatus = { label: string; badgeClass: string };
+// `labelKey` is a key in the "members" namespace.
+export type MemberStatus = {
+  labelKey: "status.inactive" | "status.noValidMembership" | "status.active";
+  badgeClass: string;
+};
 
-// A member without a valid membership cannot be shown as "Aktywny".
+// A member without a valid membership cannot be shown as active.
 export function memberStatus(
   active: boolean,
   hasValidMembership: boolean,
 ): MemberStatus {
-  if (!active) return { label: "Nieaktywny", badgeClass: "badge-danger" };
+  if (!active)
+    return { labelKey: "status.inactive", badgeClass: "badge-danger" };
   if (!hasValidMembership)
-    return { label: "Brak ważnego karnetu", badgeClass: "badge-warning" };
-  return { label: "Aktywny", badgeClass: "badge-success" };
+    return {
+      labelKey: "status.noValidMembership",
+      badgeClass: "badge-warning",
+    };
+  return { labelKey: "status.active", badgeClass: "badge-success" };
 }

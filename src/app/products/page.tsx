@@ -6,6 +6,7 @@ import { StockInput } from "./components/StockInput";
 import { Button } from "@/components/ui/Button";
 import { auth } from "@/auth";
 import { redirect } from "next/navigation";
+import { getTranslations } from "next-intl/server";
 
 export default async function ProductsPage() {
   const session = await auth();
@@ -15,15 +16,16 @@ export default async function ProductsPage() {
     redirect("/pos");
   }
 
+  const t = await getTranslations("products");
   const products = await getProducts();
 
   return (
     <div className="fade-in">
       <div className="flex justify-between items-center mb-6">
-        <h1>Produkty i Magazyn</h1>
+        <h1>{t("title")}</h1>
         {isAdmin && (
           <Link href="/products/new">
-            <Button>Dodaj Produkt</Button>
+            <Button>{t("add")}</Button>
           </Link>
         )}
       </div>
@@ -33,18 +35,18 @@ export default async function ProductsPage() {
           <table className="table">
             <thead>
               <tr>
-                <th>Nazwa</th>
-                <th>Kategoria</th>
-                <th>Cena</th>
-                <th>Stan Magazynowy</th>
-                <th>Akcje</th>
+                <th>{t("colName")}</th>
+                <th>{t("colCategory")}</th>
+                <th>{t("colPrice")}</th>
+                <th>{t("colStock")}</th>
+                <th>{t("colActions")}</th>
               </tr>
             </thead>
             <tbody>
               {products.length === 0 ? (
                 <tr>
                   <td colSpan={5} className="table-empty">
-                    Brak produktów.
+                    {t("empty")}
                   </td>
                 </tr>
               ) : (
@@ -52,13 +54,12 @@ export default async function ProductsPage() {
                   <tr key={product.id}>
                     <td className="font-medium">{product.name}</td>
                     <td>
-                      {product.category === "DRINKS"
-                        ? "Napoje"
-                        : product.category === "SUPPLEMENTS"
-                          ? "Suplementy"
-                          : product.category}
+                      {product.category === "DRINKS" ||
+                      product.category === "SUPPLEMENTS"
+                        ? t(`categories.${product.category}`)
+                        : product.category}
                     </td>
-                    <td>{product.price.toFixed(2)} zł</td>
+                    <td>{t("price", { price: product.price.toFixed(2) })}</td>
                     <td>
                       <StockInput id={product.id} stock={product.stock} />
                     </td>

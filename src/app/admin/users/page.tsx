@@ -1,14 +1,9 @@
 import { auth } from "@/auth";
 import { redirect } from "next/navigation";
+import { getFormatter, getTranslations } from "next-intl/server";
 import Link from "next/link";
 import { getUsers } from "@/app/actions/users";
 import { Button } from "@/components/ui/Button";
-
-function roleLabel(role: string) {
-  if (role === "ADMIN") return "Administrator";
-  if (role === "RECEPTION") return "Recepcjonista";
-  return role;
-}
 
 export default async function AdminUsersPage() {
   const session = await auth();
@@ -17,13 +12,17 @@ export default async function AdminUsersPage() {
   }
 
   const users = await getUsers();
+  const t = await getTranslations("users");
+  const format = await getFormatter();
+  const roleLabel = (role: string) =>
+    role === "ADMIN" || role === "RECEPTION" ? t(`roles.${role}`) : role;
 
   return (
     <div className="fade-in">
       <div className="flex justify-between items-center mb-6">
-        <h1>Użytkownicy</h1>
+        <h1>{t("list.title")}</h1>
         <Link href="/admin/users/new">
-          <Button>Dodaj użytkownika</Button>
+          <Button>{t("list.add")}</Button>
         </Link>
       </div>
 
@@ -32,17 +31,17 @@ export default async function AdminUsersPage() {
           <table className="table">
             <thead>
               <tr>
-                <th>Login</th>
-                <th>Rola</th>
-                <th>Utworzony</th>
-                <th>Akcje</th>
+                <th>{t("list.colUsername")}</th>
+                <th>{t("list.colRole")}</th>
+                <th>{t("list.colCreated")}</th>
+                <th>{t("list.colActions")}</th>
               </tr>
             </thead>
             <tbody>
               {users.length === 0 ? (
                 <tr>
                   <td colSpan={4} className="table-empty">
-                    Brak użytkowników.
+                    {t("list.empty")}
                   </td>
                 </tr>
               ) : (
@@ -51,14 +50,16 @@ export default async function AdminUsersPage() {
                     <td className="font-medium">{user.username}</td>
                     <td>{roleLabel(user.role)}</td>
                     <td>
-                      {new Date(user.createdAt).toLocaleDateString("pl-PL")}
+                      {format.dateTime(new Date(user.createdAt), {
+                        dateStyle: "medium",
+                      })}
                     </td>
                     <td>
                       <Link
                         href={`/admin/users/${user.id}/edit`}
                         className="text-primary font-medium"
                       >
-                        Edytuj
+                        {t("list.edit")}
                       </Link>
                     </td>
                   </tr>

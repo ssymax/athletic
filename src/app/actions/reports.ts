@@ -2,13 +2,15 @@
 
 import prisma from "@/lib/db";
 import { auth } from "@/auth";
+import { getTranslations } from "next-intl/server";
 import { getExpiringMemberships as listExpiringMemberships } from "@/app/actions/memberships";
 import { EXPIRY_REMINDER_DAYS } from "@/lib/memberships";
 
 async function assertAdmin() {
   const session = await auth();
   if (session?.user?.role !== "ADMIN") {
-    throw new Error("Brak uprawnień administratora");
+    const t = await getTranslations("reports");
+    throw new Error(t("errors.adminRequired"));
   }
 }
 

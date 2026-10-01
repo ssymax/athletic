@@ -1,1 +1,40 @@
-{}
+{
+  "title": "Produkty i Magazyn",
+  "add": "Dodaj Produkt",
+  "colName": "Nazwa",
+  "colCategory": "Kategoria",
+  "colPrice": "Cena",
+  "colStock": "Stan Magazynowy",
+  "colActions": "Akcje",
+  "empty": "Brak produktów.",
+  "price": "{price} zł",
+  "categories": {
+    "DRINKS": "Napoje",
+    "SUPPLEMENTS": "Suplementy",
+    "OTHER": "Inne"
+  },
+  "addPiece": "Dodaj sztukę",
+  "removePiece": "Usuń sztukę",
+  "delete": "Usuń",
+  "deleteTitle": "Potwierdź usunięcie",
+  "deleteConfirm": "Czy na pewno chcesz usunąć produkt <strong>{name}</strong>?",
+  "cancel": "Anuluj",
+  "deleting": "Usuwanie...",
+  "deleteYes": "Tak, usuń",
+  "deleteFailed": "Nie udało się usunąć produktu.",
+  "new": {
+    "back": "← Wróć",
+    "title": "Nowy Produkt",
+    "name": "Nazwa",
+    "category": "Kategoria",
+    "price": "Cena (PLN)",
+    "initialStock": "Stan początkowy",
+    "cancel": "Anuluj",
+    "submit": "Dodaj",
+    "genericError": "Something went wrong"
+  },
+  "errors": {
+    "adminRequired": "Brak uprawnień administratora",
+    "requiredFields": "Please fill in all required fields"
+  }
+}

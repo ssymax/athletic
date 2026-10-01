@@ -1,1 +1,19 @@
-{}
+{
+  "title": "Oznacz Wejście",
+  "searchPlaceholder": "Szukaj po nazwisku lub numerze...",
+  "search": "Szukaj",
+  "activeMemberships": "Aktywne Karnety",
+  "noActiveMemberships": "Brak aktywnych karnetów",
+  "entriesLeft": "Pozostało wejść: {count}",
+  "validUntil": "Ważny do: {date}",
+  "noExpiry": "Bezterminowy",
+  "punch": "Odbij",
+  "notFound": "Nie znaleziono klubowiczów.",
+  "errors": {
+    "processing": "Error processing check-in",
+    "invalidMembership": "Invalid or inactive membership",
+    "expired": "Membership expired",
+    "noEntries": "No entries remaining"
+  },
+  "visitRegistered": "Visit registered"
+}

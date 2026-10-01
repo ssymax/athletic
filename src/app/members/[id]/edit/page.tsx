@@ -2,6 +2,7 @@
 
 import { getMember, updateMember } from "@/app/actions/members";
 import Link from "next/link";
+import { useTranslations } from "next-intl";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 
@@ -12,6 +13,7 @@ export default function EditMemberPage({
 }: {
   params: Promise<{ id: string }>;
 }) {
+  const t = useTranslations("members");
   const router = useRouter();
   const [member, setMember] = useState<MemberDetails | null>(null);
   const [loading, setLoading] = useState(true);
@@ -42,13 +44,12 @@ export default function EditMemberPage({
       router.push(`/members/${unwrappedParams.id}`);
       router.refresh();
     } catch (e) {
-      setError(e instanceof Error ? e.message : "Something went wrong");
+      setError(e instanceof Error ? e.message : t("errors.generic"));
     }
   }
 
-  if (loading) return <div className="p-8 text-center">Ładowanie...</div>;
-  if (!member)
-    return <div className="p-8 text-center">Nie znaleziono klubowicza.</div>;
+  if (loading) return <div className="p-8 text-center">{t("loading")}</div>;
+  if (!member) return <div className="p-8 text-center">{t("notFound")}</div>;
 
   return (
     <div className="container mx-auto py-8 max-w-lg">
@@ -57,9 +58,9 @@ export default function EditMemberPage({
           href={`/members/${member.id}`}
           className="text-muted-foreground hover:text-foreground"
         >
-          ← Wróć
+          {t("back")}
         </Link>
-        <h1 className="text-2xl font-bold">Edytuj Klubowicza</h1>
+        <h1 className="text-2xl font-bold">{t("editTitle")}</h1>
       </div>
 
       <div className="card">
@@ -68,7 +69,7 @@ export default function EditMemberPage({
           <div className="grid grid-cols-2 gap-4">
             <div className="form-group">
               <label htmlFor="firstName" className="label">
-                Imię
+                {t("firstName")}
               </label>
               <input
                 type="text"
@@ -81,7 +82,7 @@ export default function EditMemberPage({
             </div>
             <div className="form-group">
               <label htmlFor="lastName" className="label">
-                Nazwisko
+                {t("lastName")}
               </label>
               <input
                 type="text"
@@ -96,7 +97,7 @@ export default function EditMemberPage({
 
           <div className="form-group">
             <label htmlFor="phoneNumber" className="label">
-              Numer telefonu
+              {t("phone")}
             </label>
             <input
               type="tel"
@@ -110,7 +111,7 @@ export default function EditMemberPage({
 
           <div className="form-group">
             <label htmlFor="notes" className="label">
-              Notatki (opcjonalnie)
+              {t("notesOptional")}
             </label>
             <textarea
               id="notes"
@@ -130,16 +131,16 @@ export default function EditMemberPage({
               className="h-4 w-4"
             />
             <label htmlFor="active" className="label mb-0">
-              Klubowicz aktywny
+              {t("memberActive")}
             </label>
           </div>
 
           <div className="flex justify-end gap-3 pt-4">
             <Link href={`/members/${member.id}`} className="btn btn-secondary">
-              Anuluj
+              {t("cancel")}
             </Link>
             <button type="submit" className="btn btn-primary">
-              Zapisz Zmiany
+              {t("saveChanges")}
             </button>
           </div>
         </form>

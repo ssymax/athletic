@@ -4,8 +4,10 @@ import { createUser } from "@/app/actions/users";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
+import { useTranslations } from "next-intl";
 
 export default function NewUserForm() {
+  const t = useTranslations("users");
   const router = useRouter();
   const [error, setError] = useState<string | null>(null);
 
@@ -15,9 +17,7 @@ export default function NewUserForm() {
       router.push("/admin/users");
       router.refresh();
     } catch (e) {
-      setError(
-        e instanceof Error ? e.message : "Nie udało się utworzyć użytkownika",
-      );
+      setError(e instanceof Error ? e.message : t("errors.createFailed"));
     }
   }
 
@@ -28,9 +28,9 @@ export default function NewUserForm() {
           href="/admin/users"
           className="text-muted-foreground hover:text-foreground"
         >
-          ← Wróć
+          {t("form.back")}
         </Link>
-        <h1 className="text-2xl font-bold">Nowy użytkownik</h1>
+        <h1 className="text-2xl font-bold">{t("form.newTitle")}</h1>
       </div>
 
       <div className="card">
@@ -39,7 +39,7 @@ export default function NewUserForm() {
 
           <div className="form-group">
             <label htmlFor="username" className="label">
-              Login
+              {t("form.username")}
             </label>
             <input
               id="username"
@@ -47,13 +47,13 @@ export default function NewUserForm() {
               type="text"
               required
               className="input"
-              placeholder="np. recepcja2"
+              placeholder={t("form.usernamePlaceholder")}
             />
           </div>
 
           <div className="form-group">
             <label htmlFor="password" className="label">
-              Hasło
+              {t("form.password")}
             </label>
             <input
               id="password"
@@ -61,13 +61,13 @@ export default function NewUserForm() {
               type="password"
               required
               className="input"
-              placeholder="Minimum 6 znaków"
+              placeholder={t("form.passwordPlaceholder")}
             />
           </div>
 
           <div className="form-group">
             <label htmlFor="role" className="label">
-              Rola
+              {t("form.role")}
             </label>
             <select
               id="role"
@@ -75,17 +75,17 @@ export default function NewUserForm() {
               className="input"
               defaultValue="RECEPTION"
             >
-              <option value="RECEPTION">Recepcjonista</option>
-              <option value="ADMIN">Administrator</option>
+              <option value="RECEPTION">{t("roles.RECEPTION")}</option>
+              <option value="ADMIN">{t("roles.ADMIN")}</option>
             </select>
           </div>
 
           <div className="flex justify-end gap-3 pt-4">
             <Link href="/admin/users" className="btn btn-secondary">
-              Anuluj
+              {t("form.cancel")}
             </Link>
             <button type="submit" className="btn btn-primary">
-              Dodaj użytkownika
+              {t("form.create")}
             </button>
           </div>
         </form>

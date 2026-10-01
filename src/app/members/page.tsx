@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { getFormatter, getTranslations } from "next-intl/server";
 import { getMembers } from "@/app/actions/members";
 import { Button } from "@/components/ui/Button";
 import {
@@ -7,41 +8,63 @@ import {
   memberStatus,
 } from "@/lib/memberships";
 
-function formatMembershipStatus(member: MemberRow) {
+type MemberRow = Awaited<ReturnType<typeof getMembers>>[number];
+type Translator = Awaited<ReturnType<typeof getTranslations<"members">>>;
+type DateFormatter = Awaited<ReturnType<typeof getFormatter>>;
+
+function formatMembershipStatus(
+  member: MemberRow,
+  t: Translator,
+  format: DateFormatter,
+) {
   if (!member.primaryMembership) {
-    return "Brak aktywnego karnetu";
+    return t("noActiveMembership");
   }
 
   if (member.primaryMembership.type.type === "TIME") {
     if (!member.primaryMembership.endDate) {
-      return "Wygasa: -";
+      return t("expiresNoDate");
     }
-    return `Wygasa: ${new Date(member.primaryMembership.endDate).toLocaleDateString("pl-PL")}`;
+    return t("expires", {
+      date: format.dateTime(new Date(member.primaryMembership.endDate), {
+        day: "numeric",
+        month: "numeric",
+        year: "numeric",
+      }),
+    });
   }
 
-  return `Pozostało: ${member.primaryMembership.remainingEntries ?? 0} wejść`;
+  return t("remainingEntries", {
+    count: member.primaryMembership.remainingEntries ?? 0,
+  });
 }
 
-type MemberRow = Awaited<ReturnType<typeof getMembers>>[number];
-
-function expiryWarning(endDate: Date | null | undefined) {
+function expiryWarning(endDate: Date | null | undefined, t: Translator) {
   if (!endDate) return null;
   const left = daysLeft(endDate);
   if (left === null || left < 0 || left > EXPIRY_REMINDER_DAYS) return null;
-  if (left === 0) return "Kończy się dziś";
-  if (left === 1) return "Kończy się jutro";
-  return `Kończy się za ${left} dni`;
+  if (left === 0) return t("warnToday");
+  if (left === 1) return t("warnTomorrow");
+  return t("warnDays", { days: left });
 }
 
 // Date/entry count on one line, membership-ending warning underneath —
 // the badge is inline-flex, so without its own row it would stick to the date.
-function MembershipValidityCell({ member }: { member: MemberRow }) {
-  const warning = expiryWarning(member.primaryMembership?.endDate);
+function MembershipValidityCell({
+  member,
+  t,
+  format,
+}: {
+  member: MemberRow;
+  t: Translator;
+  format: DateFormatter;
+}) {
+  const warning = expiryWarning(member.primaryMembership?.endDate, t);
 
   return (
     <div className="flex flex-col items-start gap-2">
       <span className="whitespace-nowrap">
-        {formatMembershipStatus(member)}
+        {formatMembershipStatus(member, t, format)}
       </span>
       {warning && <span className="badge badge-warning">{warning}</span>}
     </div>
@@ -53,15 +76,17 @@ export default async function MembersPage({
 }: {
   searchParams: Promise<{ q: string }>;
 }) {
+  const t = await getTranslations("members");
+  const format = await getFormatter();
   const query = (await searchParams).q || "";
   const members = await getMembers(query);
 
   return (
     <div className="fade-in">
       <div className="flex justify-between items-center mb-6">
-        <h1>Klubowicze</h1>
+        <h1>{t("title")}</h1>
         <Link href="/members/add">
-          <Button>Dodaj Klubowicza</Button>
+          <Button>{t("add")}</Button>
         </Link>
       </div>
 
@@ -71,12 +96,12 @@ export default async function MembersPage({
             <input
               type="search"
               name="q"
-              placeholder="Szukaj po nazwisku lub numerze..."
+              placeholder={t("searchPlaceholder")}
               defaultValue={query}
               className="input-field"
             />
             <Button type="submit" variant="secondary">
-              Szukaj
+              {t("search")}
             </Button>
           </form>
         </div>
@@ -85,20 +110,20 @@ export default async function MembersPage({
           <table className="table">
             <thead>
               <tr>
-                <th>Imię i Nazwisko</th>
-                <th>Telefon</th>
-                <th>Karnet</th>
-                <th>Pozostało / Wygasa</th>
-                <th>Status</th>
-                <th>Notatki</th>
-                <th>Akcje</th>
+                <th>{t("columns.name")}</th>
+                <th>{t("columns.phone")}</th>
+                <th>{t("columns.membership")}</th>
+                <th>{t("columns.remaining")}</th>
+                <th>{t("columns.status")}</th>
+                <th>{t("columns.notes")}</th>
+                <th>{t("columns.actions")}</th>
               </tr>
             </thead>
             <tbody>
               {members.length === 0 ? (
                 <tr>
                   <td colSpan={7} className="table-empty">
-                    Brak klubowiczów. Dodaj pierwszego!
+                    {t("empty")}
                   </td>
                 </tr>
               ) : (
@@ -115,12 +140,16 @@ export default async function MembersPage({
                         </span>
                       ) : (
                         <span className="text-muted">
-                          Brak aktywnego karnetu
+                          {t("noActiveMembership")}
                         </span>
                       )}
                     </td>
                     <td>
-                      <MembershipValidityCell member={member} />
+                      <MembershipValidityCell
+                        member={member}
+                        t={t}
+                        format={format}
+                      />
                     </td>
                     <td>
                       {(() => {
@@ -130,7 +159,7 @@ export default async function MembersPage({
                         );
                         return (
                           <span className={`badge ${status.badgeClass}`}>
-                            {status.label}
+                            {t(status.labelKey)}
                           </span>
                         );
                       })()}
@@ -143,7 +172,7 @@ export default async function MembersPage({
                         href={`/members/${member.id}`}
                         className="text-primary font-medium"
                       >
-                        Szczegóły
+                        {t("details")}
                       </Link>
                     </td>
                   </tr>

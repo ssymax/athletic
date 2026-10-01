@@ -1,1 +1,19 @@
-{}
+{
+  "title": "Check-in",
+  "searchPlaceholder": "Search by last name or phone number...",
+  "search": "Search",
+  "activeMemberships": "Active Memberships",
+  "noActiveMemberships": "No active memberships",
+  "entriesLeft": "Entries left: {count}",
+  "validUntil": "Valid until: {date}",
+  "noExpiry": "No expiry",
+  "punch": "Check in",
+  "notFound": "No members found.",
+  "errors": {
+    "processing": "Error processing check-in",
+    "invalidMembership": "Invalid or inactive membership",
+    "expired": "Membership expired",
+    "noEntries": "No entries remaining"
+  },
+  "visitRegistered": "Visit registered"
+}

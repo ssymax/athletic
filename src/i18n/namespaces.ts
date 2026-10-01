@@ -11,7 +11,6 @@ export const namespaces = [
   "pos",
   "products",
   "reports",
-  "admin",
   "users",
   "membershipTypes",
 ] as const;

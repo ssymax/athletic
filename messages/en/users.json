@@ -1,1 +1,44 @@
-{}
+{
+  "errors": {
+    "adminRequired": "Administrator permissions required",
+    "invalidRole": "Invalid user role",
+    "required": "{label} is required",
+    "passwordTooShort": "Password must be at least 6 characters",
+    "duplicate": "A user with this username already exists",
+    "createFailed": "Failed to create user",
+    "saveFailed": "Failed to save changes"
+  },
+  "fields": {
+    "username": "Username",
+    "password": "Password"
+  },
+  "roles": {
+    "ADMIN": "Administrator",
+    "RECEPTION": "Receptionist"
+  },
+  "list": {
+    "title": "Users",
+    "add": "Add user",
+    "colUsername": "Username",
+    "colRole": "Role",
+    "colCreated": "Created",
+    "colActions": "Actions",
+    "empty": "No users.",
+    "edit": "Edit"
+  },
+  "form": {
+    "back": "← Back",
+    "newTitle": "New user",
+    "editTitle": "Edit user",
+    "username": "Username",
+    "usernamePlaceholder": "e.g. reception2",
+    "password": "Password",
+    "passwordPlaceholder": "At least 6 characters",
+    "newPassword": "New password",
+    "newPasswordPlaceholder": "Leave blank to keep current",
+    "role": "Role",
+    "cancel": "Cancel",
+    "create": "Add user",
+    "save": "Save changes"
+  }
+}
