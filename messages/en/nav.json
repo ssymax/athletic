@@ -1,0 +1,16 @@
+{
+  "dashboard": "Dashboard",
+  "checkin": "Check-in",
+  "members": "Members",
+  "pos": "Sales",
+  "admin": "Admin",
+  "products": "Inventory",
+  "memberships": "Memberships",
+  "reports": "Reports",
+  "users": "Users",
+  "roleAdmin": "Administrator",
+  "roleReception": "Receptionist",
+  "roleUser": "User",
+  "unknownUser": "Unknown user",
+  "logout": "Log out"
+}

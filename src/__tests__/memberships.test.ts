@@ -119,7 +119,7 @@ describe("sellMembership", () => {
     expect(createData.pricePaid).toBe(120);
     expect(createData.paymentMethod).toBe("CARD");
 
-    // Karnet wejściowy bez własnego limitu dni jest ważny 30 dni
+    // An entry-based membership without its own day limit is valid for 30 days
     const expectedEnd = new Date("2025-03-01");
     expectedEnd.setDate(expectedEnd.getDate() + 30);
     expect(createData.endDate).toEqual(expectedEnd);
@@ -303,7 +303,7 @@ describe("getExpiringMemberships", () => {
     const spanInDays = Math.round(
       (where.endDate.lt.getTime() - where.endDate.gte.getTime()) / 86400000,
     );
-    expect(spanInDays).toBe(8); // dziś + 7 pełnych dni
+    expect(spanInDays).toBe(8); // today + 7 full days
   });
 });
 
@@ -353,9 +353,9 @@ describe("getLapsedMembers", () => {
       .mockResolvedValueOnce([
         lapsed("old", "m1", daysAgo(15)),
         lapsed("new", "m1", daysAgo(3)),
-        // wejścia skończyły się przed datą końca
+        // entries ran out before the end date
         lapsed("entries", "m2", daysAgo(-10), daysAgo(5)),
-        // wygasł dziś — jeszcze nie "brak karnetu"
+        // expired today — not yet "no membership"
         lapsed("today", "m3", null, daysAgo(0)),
         lapsed("tooOld", "m4", daysAgo(21)),
       ]);

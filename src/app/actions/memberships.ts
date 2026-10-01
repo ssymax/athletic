@@ -12,9 +12,9 @@ import {
   startOfDay,
 } from "@/lib/memberships";
 
-// Przestawia na EXPIRED wszystkie karnety, które formalnie są jeszcze ACTIVE,
-// ale minęła ich data ważności lub skończyły się wejścia. Wywoływane przy
-// każdym odczycie list karnetów, żeby status nigdy nie kłamał.
+// Sets to EXPIRED all memberships that are formally still ACTIVE but whose
+// expiry date has passed or whose entries have run out. Called on every read
+// of membership lists so the status never lies.
 export async function expireOutdatedMemberships() {
   const today = startOfDay(new Date());
 
@@ -54,7 +54,7 @@ export async function expireOutdatedMemberships() {
   return outdated.length;
 }
 
-// Karnety, które kończą się w ciągu najbliższych `days` dni (włącznie z dziś).
+// Memberships ending within the next `days` days (including today).
 export async function getExpiringMemberships(days = EXPIRY_REMINDER_DAYS) {
   await expireOutdatedMemberships();
 
@@ -72,9 +72,9 @@ export async function getExpiringMemberships(days = EXPIRY_REMINDER_DAYS) {
   });
 }
 
-// Klubowicze, którzy od 1 do `days` dni nie mają żadnego ważnego karnetu.
-// Ostatni ważny dzień to data końca karnetu albo — gdy skończyły się wejścia
-// przed tą datą — dzień automatycznego wygaśnięcia.
+// Members who have had no valid membership for 1 to `days` days.
+// The last valid day is the membership end date or — when entries ran out
+// before that date — the day of automatic expiration.
 export async function getLapsedMembers(days = LAPSED_REMINDER_DAYS) {
   await expireOutdatedMemberships();
 
@@ -165,7 +165,7 @@ export async function updateMembership(
 
   if (!existing) throw new Error("Nie znaleziono karnetu");
 
-  // Karnet po terminie (lub bez wejść) nie może zostać zapisany jako aktywny.
+  // A membership past its end date (or without entries) cannot be saved as active.
   if (
     status === "ACTIVE" &&
     isMembershipExpired({ endDate, remainingEntries, type: existing.type })

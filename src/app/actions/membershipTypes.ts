@@ -47,7 +47,7 @@ export async function createMembershipType(formData: FormData) {
     throw new Error("Entry-based memberships require number of entries");
   }
 
-  // Karnety wejściowe też mają ważność w dniach — domyślnie 30 dni.
+  // Entry-based memberships also have a validity in days — 30 days by default.
   const daysValid = resolveDaysValid(type, daysValidInput);
 
   await prisma.membershipType.create({

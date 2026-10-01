@@ -33,8 +33,8 @@ function expiryWarning(endDate: Date | null | undefined) {
   return `Kończy się za ${left} dni`;
 }
 
-// Data/liczba wejść w jednej linii, ostrzeżenie o końcu karnetu pod spodem —
-// badge jest inline-flex, więc bez własnego wiersza przykleiłby się do daty.
+// Date/entry count on one line, membership-ending warning underneath —
+// the badge is inline-flex, so without its own row it would stick to the date.
 function MembershipValidityCell({ member }: { member: MemberRow }) {
   const warning = expiryWarning(member.primaryMembership?.endDate);
 

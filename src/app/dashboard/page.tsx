@@ -34,8 +34,8 @@ export default async function DashboardPage({
   const isAdmin = session?.user?.role === "ADMIN";
   const showLapsed = (await searchParams).lista === "brak-karnetu";
 
-  // Pobranie kończących się karnetów najpierw domyka te po terminie,
-  // więc statystyki niżej liczą się już na poprawnych statusach.
+  // Fetching expiring memberships first closes the overdue ones,
+  // so the stats below are computed on correct statuses.
   const expiringMemberships = await getExpiringMemberships();
   const lapsedMembers = await getLapsedMembers();
 

@@ -66,7 +66,7 @@ export async function registerVisit(memberId: string, membershipId: string) {
     return { success: false, message: "Invalid or inactive membership" };
   }
 
-  // Check validity — dzień końca ważności jest jeszcze ważny.
+  // Check validity — the end date itself is still valid.
   if (
     membership.endDate &&
     isMembershipExpired({
@@ -98,8 +98,8 @@ export async function registerVisit(memberId: string, membershipId: string) {
       return { success: false, message: "No entries remaining" };
     }
 
-    // Ostatnie wejście wyczerpuje karnet — od razu ustawiamy EXPIRED,
-    // żeby klubowicz nie zostawał ze statusem "aktywny" bez pokrycia.
+    // The last entry uses up the membership — set EXPIRED right away,
+    // so the member isn't left with an "active" status without cover.
     const isLastEntry = membership.remainingEntries === 1;
 
     // Deduct entry

@@ -176,8 +176,8 @@ export async function getSalesReport(startDate: Date, endDate: Date) {
   return report;
 }
 
-// Jedno źródło prawdy dla listy kończących się karnetów — patrz
-// getExpiringMemberships w @/app/actions/memberships.
+// Single source of truth for the list of expiring memberships — see
+// getExpiringMemberships in @/app/actions/memberships.
 export async function getExpiringMemberships(
   days: number = EXPIRY_REMINDER_DAYS,
 ) {

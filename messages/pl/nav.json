@@ -1,0 +1,16 @@
+{
+  "dashboard": "Panel",
+  "checkin": "Wejście",
+  "members": "Klubowicze",
+  "pos": "Sprzedaż",
+  "admin": "Admin",
+  "products": "Magazyn",
+  "memberships": "Karnety",
+  "reports": "Raporty",
+  "users": "Użytkownicy",
+  "roleAdmin": "Administrator",
+  "roleReception": "Recepcjonista",
+  "roleUser": "Użytkownik",
+  "unknownUser": "Nieznany użytkownik",
+  "logout": "Wyloguj się"
+}
