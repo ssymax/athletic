@@ -5,6 +5,9 @@ export const DEFAULT_DAYS_VALID = 30;
 // Ile dni przed końcem karnetu przypominamy o nim na panelu głównym.
 export const EXPIRY_REMINDER_DAYS = 7;
 
+// Przez ile dni po wygaśnięciu karnetu pokazujemy klubowicza na panelu głównym.
+export const LAPSED_REMINDER_DAYS = 20;
+
 export function resolveDaysValid(
   type: string,
   daysValid: number | null | undefined,

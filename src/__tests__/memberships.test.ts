@@ -24,6 +24,7 @@ vi.mock("@/lib/db", () => ({ default: prismaMock }));
 import {
   expireOutdatedMemberships,
   getExpiringMemberships,
+  getLapsedMembers,
   sellMembership,
   updateMembership,
 } from "@/app/actions/memberships";
@@ -303,5 +304,67 @@ describe("getExpiringMemberships", () => {
       (where.endDate.lt.getTime() - where.endDate.gte.getTime()) / 86400000,
     );
     expect(spanInDays).toBe(8); // dziś + 7 pełnych dni
+  });
+});
+
+describe("getLapsedMembers", () => {
+  beforeEach(() => vi.clearAllMocks());
+
+  function daysAgo(days: number) {
+    const d = new Date();
+    d.setHours(12, 0, 0, 0);
+    d.setDate(d.getDate() - days);
+    return d;
+  }
+
+  function lapsed(
+    id: string,
+    memberId: string,
+    endDate: Date | null,
+    expiredAt?: Date,
+  ) {
+    return {
+      id,
+      memberId,
+      endDate,
+      member: { id: memberId, firstName: "Jan", lastName: memberId },
+      type: { name: "Open" },
+      history: expiredAt ? [{ action: "EXPIRE", date: expiredAt }] : [],
+    };
+  }
+
+  it("only asks for active members without any ACTIVE membership", async () => {
+    prismaMock.membership.findMany
+      .mockResolvedValueOnce([]) // expireOutdatedMemberships
+      .mockResolvedValueOnce([]);
+
+    await getLapsedMembers(20);
+
+    const where = prismaMock.membership.findMany.mock.calls[1][0].where;
+    expect(where.status).toBe("EXPIRED");
+    expect(where.member).toEqual({
+      is: { active: true, memberships: { none: { status: "ACTIVE" } } },
+    });
+  });
+
+  it("keeps members lapsed 1-20 days, using their latest membership", async () => {
+    prismaMock.membership.findMany
+      .mockResolvedValueOnce([])
+      .mockResolvedValueOnce([
+        lapsed("old", "m1", daysAgo(15)),
+        lapsed("new", "m1", daysAgo(3)),
+        // wejścia skończyły się przed datą końca
+        lapsed("entries", "m2", daysAgo(-10), daysAgo(5)),
+        // wygasł dziś — jeszcze nie "brak karnetu"
+        lapsed("today", "m3", null, daysAgo(0)),
+        lapsed("tooOld", "m4", daysAgo(21)),
+      ]);
+
+    const result = await getLapsedMembers(20);
+
+    expect(result.map((r) => [r.id, r.daysWithout])).toEqual([
+      ["new", 3],
+      ["entries", 5],
+    ]);
   });
 });

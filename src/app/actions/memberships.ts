@@ -4,8 +4,10 @@ import prisma from "@/lib/db";
 import { revalidatePath } from "next/cache";
 import {
   addDays,
+  daysLeft,
   EXPIRY_REMINDER_DAYS,
   isMembershipExpired,
+  LAPSED_REMINDER_DAYS,
   resolveDaysValid,
   startOfDay,
 } from "@/lib/memberships";
@@ -68,6 +70,65 @@ export async function getExpiringMemberships(days = EXPIRY_REMINDER_DAYS) {
     include: { member: true, type: true },
     orderBy: { endDate: "asc" },
   });
+}
+
+// Klubowicze, którzy od 1 do `days` dni nie mają żadnego ważnego karnetu.
+// Ostatni ważny dzień to data końca karnetu albo — gdy skończyły się wejścia
+// przed tą datą — dzień automatycznego wygaśnięcia.
+export async function getLapsedMembers(days = LAPSED_REMINDER_DAYS) {
+  await expireOutdatedMemberships();
+
+  const today = startOfDay(new Date());
+  const since = addDays(today, -days);
+
+  const memberships = await prisma.membership.findMany({
+    where: {
+      status: "EXPIRED",
+      member: {
+        is: { active: true, memberships: { none: { status: "ACTIVE" } } },
+      },
+      OR: [
+        { endDate: { gte: since, lt: today } },
+        { history: { some: { action: "EXPIRE", date: { gte: since } } } },
+      ],
+    },
+    include: {
+      member: true,
+      type: true,
+      history: {
+        where: { action: "EXPIRE" },
+        orderBy: { date: "desc" },
+        take: 1,
+      },
+    },
+  });
+
+  const latestByMember = new Map<
+    string,
+    { membership: (typeof memberships)[number]; lastValidDay: Date }
+  >();
+
+  for (const membership of memberships) {
+    const lastValidDay =
+      membership.endDate && membership.endDate < today
+        ? membership.endDate
+        : membership.history[0]?.date;
+    if (!lastValidDay) continue;
+
+    const current = latestByMember.get(membership.memberId);
+    if (!current || lastValidDay > current.lastValidDay) {
+      latestByMember.set(membership.memberId, { membership, lastValidDay });
+    }
+  }
+
+  return [...latestByMember.values()]
+    .map(({ membership, lastValidDay }) => ({
+      ...membership,
+      lastValidDay,
+      daysWithout: -(daysLeft(lastValidDay, today) ?? 0),
+    }))
+    .filter((lapsed) => lapsed.daysWithout >= 1 && lapsed.daysWithout <= days)
+    .sort((a, b) => a.daysWithout - b.daysWithout);
 }
 
 export async function getMembership(id: string) {

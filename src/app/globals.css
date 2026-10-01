@@ -368,6 +368,10 @@ p {
   width: 100%;
 }
 
+.btn {
+  background-origin: border-box;
+}
+
 .label,
 label {
   display: block;
