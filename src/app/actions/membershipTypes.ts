@@ -4,11 +4,13 @@ import prisma from "@/lib/db";
 import { revalidatePath } from "next/cache";
 import { auth } from "@/auth";
 import { resolveDaysValid } from "@/lib/memberships";
+import { getTranslations } from "next-intl/server";
 
 async function assertAdmin() {
   const session = await auth();
   if (session?.user?.role !== "ADMIN") {
-    throw new Error("Brak uprawnień administratora");
+    const t = await getTranslations("membershipTypes");
+    throw new Error(t("errors.adminRequired"));
   }
 }
 
@@ -23,6 +25,7 @@ export async function getMembershipTypes() {
 
 export async function createMembershipType(formData: FormData) {
   await assertAdmin();
+  const t = await getTranslations("membershipTypes");
 
   const name = formData.get("name") as string;
   const scope = formData.get("scope") as string;
@@ -36,18 +39,18 @@ export async function createMembershipType(formData: FormData) {
     : null;
 
   if (!name || !scope || !type || isNaN(price)) {
-    throw new Error("Please fill in all required fields");
+    throw new Error(t("errors.requiredFields"));
   }
 
   if (type === "TIME" && !daysValidInput) {
-    throw new Error("Time-based memberships require days validity");
+    throw new Error(t("errors.timeNeedsDays"));
   }
 
   if (type === "ENTRY" && !entries) {
-    throw new Error("Entry-based memberships require number of entries");
+    throw new Error(t("errors.entryNeedsEntries"));
   }
 
-  // Karnety wejściowe też mają ważność w dniach — domyślnie 30 dni.
+  // Entry-based memberships also have a validity in days — 30 days by default.
   const daysValid = resolveDaysValid(type, daysValidInput);
 
   await prisma.membershipType.create({
@@ -66,13 +69,14 @@ export async function createMembershipType(formData: FormData) {
 
 export async function deleteMembershipType(id: string) {
   await assertAdmin();
+  const t = await getTranslations("membershipTypes");
 
   const linkedMemberships = await prisma.membership.count({
     where: { typeId: id },
   });
 
   if (linkedMemberships > 0) {
-    throw new Error("Nie można usunąć karnetu, który był już sprzedany.");
+    throw new Error(t("errors.inUse"));
   }
 
   await prisma.membershipType.delete({

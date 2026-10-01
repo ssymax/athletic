@@ -2,6 +2,7 @@
 
 import prisma from "@/lib/db";
 import { revalidatePath } from "next/cache";
+import { getTranslations } from "next-intl/server";
 import { isMembershipExpired, isMembershipValid } from "@/lib/memberships";
 import { expireOutdatedMemberships } from "@/app/actions/memberships";
 
@@ -57,16 +58,17 @@ export async function findMemberForCheckin(query: string) {
 }
 
 export async function registerVisit(memberId: string, membershipId: string) {
+  const t = await getTranslations("checkin");
   const membership = await prisma.membership.findUnique({
     where: { id: membershipId },
     include: { type: true },
   });
 
   if (!membership || membership.status !== "ACTIVE") {
-    return { success: false, message: "Invalid or inactive membership" };
+    return { success: false, message: t("errors.invalidMembership") };
   }
 
-  // Check validity — dzień końca ważności jest jeszcze ważny.
+  // Check validity — the end date itself is still valid.
   if (
     membership.endDate &&
     isMembershipExpired({
@@ -87,7 +89,7 @@ export async function registerVisit(memberId: string, membershipId: string) {
         },
       },
     });
-    return { success: false, message: "Membership expired" };
+    return { success: false, message: t("errors.expired") };
   }
 
   if (membership.type.type === "ENTRY") {
@@ -95,11 +97,11 @@ export async function registerVisit(memberId: string, membershipId: string) {
       membership.remainingEntries !== null &&
       membership.remainingEntries <= 0
     ) {
-      return { success: false, message: "No entries remaining" };
+      return { success: false, message: t("errors.noEntries") };
     }
 
-    // Ostatnie wejście wyczerpuje karnet — od razu ustawiamy EXPIRED,
-    // żeby klubowicz nie zostawał ze statusem "aktywny" bez pokrycia.
+    // The last entry uses up the membership — set EXPIRED right away,
+    // so the member isn't left with an "active" status without cover.
     const isLastEntry = membership.remainingEntries === 1;
 
     // Deduct entry
@@ -137,5 +139,5 @@ export async function registerVisit(memberId: string, membershipId: string) {
 
   revalidatePath("/checkin");
   revalidatePath(`/members/${memberId}`);
-  return { success: true, message: "Visit registered" };
+  return { success: true, message: t("visitRegistered") };
 }

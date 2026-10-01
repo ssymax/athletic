@@ -2,8 +2,10 @@
 
 import { signIn, signOut } from "@/auth";
 import { AuthError } from "next-auth";
+import { getTranslations } from "next-intl/server";
 
 export async function login(formData: FormData) {
+  const t = await getTranslations("auth");
   try {
     await signIn("credentials", {
       username: formData.get("username"),
@@ -14,9 +16,9 @@ export async function login(formData: FormData) {
     if (error instanceof AuthError) {
       switch (error.type) {
         case "CredentialsSignin":
-          return { error: "Błędny login lub hasło" };
+          return { error: t("invalidCredentials") };
         default:
-          return { error: "Coś poszło nie tak" };
+          return { error: t("genericError") };
       }
     }
     throw error;

@@ -5,6 +5,7 @@ import { getMembershipTypes } from "@/app/actions/membershipTypes";
 import { sellMembership } from "@/app/actions/memberships";
 import { addDays, resolveDaysValid } from "@/lib/memberships";
 import Link from "next/link";
+import { useFormatter, useTranslations } from "next-intl";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 
@@ -16,6 +17,8 @@ export default function NewMembershipPage({
 }: {
   params: Promise<{ id: string }>;
 }) {
+  const t = useTranslations("memberships");
+  const format = useFormatter();
   const router = useRouter();
   const [member, setMember] = useState<MemberDetails | null>(null);
   const [types, setTypes] = useState<MembershipType[]>([]);
@@ -56,7 +59,7 @@ export default function NewMembershipPage({
       router.push(`/members/${unwrappedParams.id}`);
       router.refresh();
     } catch (e) {
-      setError(e instanceof Error ? e.message : "Something went wrong");
+      setError(e instanceof Error ? e.message : t("errors.generic"));
     }
   }
 
@@ -68,9 +71,9 @@ export default function NewMembershipPage({
     ? addDays(new Date(startDate), effectiveDaysValid)
     : null;
 
-  if (loading) return <div className="p-8 text-center">Ładowanie...</div>;
+  if (loading) return <div className="p-8 text-center">{t("loading")}</div>;
   if (!member)
-    return <div className="p-8 text-center">Nie znaleziono klubowicza.</div>;
+    return <div className="p-8 text-center">{t("memberNotFound")}</div>;
 
   return (
     <div className="container mx-auto py-8 max-w-lg">
@@ -79,14 +82,14 @@ export default function NewMembershipPage({
           href={`/members/${member.id}`}
           className="text-muted-foreground hover:text-foreground"
         >
-          ← Wróć
+          {t("back")}
         </Link>
-        <h1 className="text-2xl font-bold">Sprzedaj Karnet</h1>
+        <h1 className="text-2xl font-bold">{t("sell.title")}</h1>
       </div>
 
       <div className="card">
         <div className="panel-soft mb-4">
-          <p className="text-sm text-muted-foreground">Klubowicz</p>
+          <p className="text-sm text-muted-foreground">{t("sell.member")}</p>
           <p className="font-semibold text-lg">
             {member.firstName} {member.lastName}
           </p>
@@ -97,7 +100,7 @@ export default function NewMembershipPage({
 
           <div className="form-group">
             <label htmlFor="typeId" className="label">
-              Typ Karnetu
+              {t("sell.type")}
             </label>
             <select
               name="typeId"
@@ -117,29 +120,46 @@ export default function NewMembershipPage({
           {selectedTypeData && (
             <div className="alert alert-info mb-4">
               <p>
-                <strong>Cena:</strong> {selectedTypeData.price.toFixed(2)} PLN
+                <strong>{t("sell.price")}</strong>{" "}
+                {selectedTypeData.price.toFixed(2)} PLN
               </p>
               <p>
-                <strong>Typ:</strong>{" "}
-                {selectedTypeData.type === "TIME" ? "Czasowy" : "Wejściowy"}
+                <strong>{t("sell.kind")}</strong>{" "}
+                {t(
+                  `kind.${selectedTypeData.type === "TIME" ? "TIME" : "ENTRY"}`,
+                )}
               </p>
               <p>
-                <strong>Ważność:</strong>{" "}
+                <strong>{t("sell.validity")}</strong>{" "}
                 {selectedTypeData.type === "TIME"
-                  ? `${selectedTypeData.daysValid} dni`
-                  : `${selectedTypeData.entries} wejść lub ${effectiveDaysValid} dni`}
+                  ? t("sell.validityTime", {
+                      days: selectedTypeData.daysValid ?? 0,
+                    })
+                  : t("sell.validityEntry", {
+                      entries: selectedTypeData.entries ?? 0,
+                      days: effectiveDaysValid ?? 0,
+                    })}
               </p>
               {effectiveEndDate && (
                 <p>
-                  <strong>Ważny do:</strong>{" "}
-                  {effectiveEndDate.toLocaleDateString("pl-PL")}
+                  <strong>{t("sell.validUntil")}</strong>{" "}
+                  {format.dateTime(effectiveEndDate, {
+                    day: "numeric",
+                    month: "numeric",
+                    year: "numeric",
+                  })}
                 </p>
               )}
               {discount > 0 && (
                 <p className="text-green-700 font-semibold">
-                  <strong>Do zapłaty:</strong>{" "}
-                  {Math.max(0, selectedTypeData.price - discount).toFixed(2)}{" "}
-                  PLN (rabat: {discount.toFixed(2)} PLN)
+                  <strong>{t("sell.toPay")}</strong>{" "}
+                  {t("sell.toPayValue", {
+                    amount: Math.max(
+                      0,
+                      selectedTypeData.price - discount,
+                    ).toFixed(2),
+                    discount: discount.toFixed(2),
+                  })}
                 </p>
               )}
             </div>
@@ -147,7 +167,7 @@ export default function NewMembershipPage({
 
           <div className="form-group">
             <label htmlFor="startDate" className="label">
-              Data Rozpoczęcia
+              {t("sell.startDate")}
             </label>
             <input
               type="date"
@@ -162,7 +182,7 @@ export default function NewMembershipPage({
 
           <div className="form-group">
             <label htmlFor="discount" className="label">
-              Rabat (PLN)
+              {t("sell.discount")}
             </label>
             <input
               type="number"
@@ -179,20 +199,20 @@ export default function NewMembershipPage({
 
           <div className="form-group">
             <label htmlFor="paymentMethod" className="label">
-              Metoda Płatności
+              {t("sell.paymentMethod")}
             </label>
             <select name="paymentMethod" id="paymentMethod" className="input">
-              <option value="CASH">Gotówka</option>
-              <option value="CARD">Karta</option>
+              <option value="CASH">{t("payment.CASH")}</option>
+              <option value="CARD">{t("payment.CARD")}</option>
             </select>
           </div>
 
           <div className="flex justify-end gap-3 pt-4">
             <Link href={`/members/${member.id}`} className="btn btn-secondary">
-              Anuluj
+              {t("cancel")}
             </Link>
             <button type="submit" className="btn btn-primary">
-              Sprzedaj
+              {t("sell.submit")}
             </button>
           </div>
         </form>

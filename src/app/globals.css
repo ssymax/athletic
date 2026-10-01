@@ -611,8 +611,8 @@ textarea {
   background: var(--success);
 }
 
-/* Lista kończących się karnetów na panelu — stała wysokość, przewijana w środku,
-   żeby karta nie rosła przy dużej liczbie pozycji. */
+/* List of expiring memberships on the dashboard — fixed height, scrolls inside,
+   so the card doesn't grow with a large number of items. */
 .scroll-list {
   height: 16.5rem;
   overflow-y: auto;

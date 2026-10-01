@@ -1,0 +1,57 @@
+{
+  "back": "← Wróć",
+  "loading": "Ładowanie...",
+  "memberNotFound": "Nie znaleziono klubowicza.",
+  "membershipNotFound": "Nie znaleziono karnetu.",
+  "cancel": "Anuluj",
+  "status": {
+    "ACTIVE": "Aktywny",
+    "EXPIRED": "Wygasły",
+    "CANCELLED": "Anulowany"
+  },
+  "payment": {
+    "CASH": "Gotówka",
+    "CARD": "Karta"
+  },
+  "kind": {
+    "TIME": "Czasowy",
+    "ENTRY": "Wejściowy"
+  },
+  "sell": {
+    "title": "Sprzedaj Karnet",
+    "member": "Klubowicz",
+    "type": "Typ Karnetu",
+    "price": "Cena:",
+    "kind": "Typ:",
+    "validity": "Ważność:",
+    "validityTime": "{days, plural, one {# dzień} few {# dni} many {# dni} other {# dni}}",
+    "validityEntry": "{entries, plural, one {# wejście} few {# wejścia} many {# wejść} other {# wejścia}} lub {days, plural, one {# dzień} few {# dni} many {# dni} other {# dni}}",
+    "validUntil": "Ważny do:",
+    "toPay": "Do zapłaty:",
+    "toPayValue": "{amount} PLN (rabat: {discount} PLN)",
+    "startDate": "Data Rozpoczęcia",
+    "discount": "Rabat (PLN)",
+    "paymentMethod": "Metoda Płatności",
+    "submit": "Sprzedaj"
+  },
+  "edit": {
+    "title": "Edytuj Karnet",
+    "type": "Typ karnetu",
+    "startDate": "Data rozpoczęcia",
+    "endDate": "Data zakończenia",
+    "remainingEntries": "Pozostałe wejścia",
+    "status": "Status",
+    "statusHint": "Karnet po dacie zakończenia lub bez pozostałych wejść nie może być aktywny.",
+    "paymentMethod": "Metoda płatności",
+    "pricePaid": "Cena zapłacona (PLN)",
+    "note": "Notatka",
+    "submit": "Zapisz zmiany"
+  },
+  "errors": {
+    "notFound": "Nie znaleziono karnetu",
+    "expiredActive": "Karnet po terminie ważności lub bez pozostałych wejść nie może mieć statusu Aktywny. Zmień datę zakończenia / liczbę wejść albo ustaw status Wygasły.",
+    "missingFields": "Missing required fields",
+    "invalidType": "Invalid membership type",
+    "generic": "Something went wrong"
+  }
+}

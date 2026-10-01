@@ -1,0 +1,17 @@
+{
+  "title": "Sales",
+  "stock": "In stock: {count}",
+  "cart": "Cart",
+  "cartEmpty": "The cart is empty",
+  "itemLine": "{price} PLN x {quantity}",
+  "toPay": "Total due:",
+  "saleSuccess": "Sale completed successfully!",
+  "cash": "Cash",
+  "card": "Card",
+  "processing": "Processing...",
+  "checkout": "Confirm and Pay",
+  "errors": {
+    "cartEmpty": "Cart is empty",
+    "transactionFailed": "Transaction failed"
+  }
+}

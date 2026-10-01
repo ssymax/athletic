@@ -2,6 +2,8 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import { useTranslations } from "next-intl";
+import { LanguageSwitcher } from "@/components/LanguageSwitcher";
 
 interface SidebarProps {
   userName?: string | null;
@@ -19,35 +21,37 @@ function getInitials(name?: string | null) {
   return initials.slice(0, 2) || "??";
 }
 
-function getRoleLabel(role?: string | null) {
-  if (role === "ADMIN") return "Administrator";
-  if (role === "RECEPTION") return "Recepcjonista";
-  return "Użytkownik";
-}
-
 export function Sidebar({ userName, userRole }: SidebarProps) {
   const pathname = usePathname();
+  const t = useTranslations("nav");
+  const tc = useTranslations("common");
   const isAdmin = userRole === "ADMIN";
+  const roleLabel =
+    userRole === "ADMIN"
+      ? t("roleAdmin")
+      : userRole === "RECEPTION"
+        ? t("roleReception")
+        : t("roleUser");
 
   const links = [
-    { href: "/dashboard", label: "Panel", icon: "📊" },
-    { href: "/checkin", label: "Wejście", icon: "✅" },
-    { href: "/members", label: "Klubowicze", icon: "👥" },
-    { href: "/pos", label: "Sprzedaż", icon: "🛒" },
+    { href: "/dashboard", label: t("dashboard"), icon: "📊" },
+    { href: "/checkin", label: t("checkin"), icon: "✅" },
+    { href: "/members", label: t("members"), icon: "👥" },
+    { href: "/pos", label: t("pos"), icon: "🛒" },
   ];
 
   const adminLinks = [
-    { href: "/products", label: "Magazyn", icon: "📦" },
-    { href: "/admin/memberships", label: "Karnety", icon: "🎫" },
-    { href: "/reports", label: "Raporty", icon: "📈" },
-    { href: "/admin/users", label: "Użytkownicy", icon: "👤" },
+    { href: "/products", label: t("products"), icon: "📦" },
+    { href: "/admin/memberships", label: t("memberships"), icon: "🎫" },
+    { href: "/reports", label: t("reports"), icon: "📈" },
+    { href: "/admin/users", label: t("users"), icon: "👤" },
   ];
 
   return (
     <aside className="sidebar">
       <div className="sidebar-header">
         <h1 className="sidebar-title">Athletic Club</h1>
-        <p className="text-xs text-muted">Recepcja</p>
+        <p className="text-xs text-muted">{tc("reception")}</p>
       </div>
 
       <nav className="sidebar-nav">
@@ -69,7 +73,7 @@ export function Sidebar({ userName, userRole }: SidebarProps) {
           <div className="nav-submenu">
             <div className="nav-submenu-title">
               <span className="nav-icon">⚙️</span>
-              <span className="font-medium">Admin</span>
+              <span className="font-medium">{t("admin")}</span>
             </div>
             {adminLinks.map((link) => {
               const isActive = pathname.startsWith(link.href);
@@ -94,11 +98,12 @@ export function Sidebar({ userName, userRole }: SidebarProps) {
             <div className="avatar">{getInitials(userName)}</div>
             <div className="w-full">
               <p className="text-sm font-medium text-white text-ellipsis">
-                {userName || "Nieznany użytkownik"}
+                {userName || t("unknownUser")}
               </p>
-              <p className="text-xs text-muted">{getRoleLabel(userRole)}</p>
+              <p className="text-xs text-muted">{roleLabel}</p>
             </div>
           </div>
+          <LanguageSwitcher />
           <form
             action={async () => {
               const { logout } = await import("@/app/actions/auth");
@@ -106,7 +111,7 @@ export function Sidebar({ userName, userRole }: SidebarProps) {
             }}
           >
             <button className="btn btn-ghost w-full justify-start text-xs p-2">
-              🚪 Wyloguj się
+              🚪 {t("logout")}
             </button>
           </form>
         </div>

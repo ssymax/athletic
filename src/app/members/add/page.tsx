@@ -2,10 +2,12 @@
 
 import { createMember } from "@/app/actions/members";
 import Link from "next/link";
+import { useTranslations } from "next-intl";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 
 export default function AddMemberPage() {
+  const t = useTranslations("members");
   const router = useRouter();
   const [error, setError] = useState<string | null>(null);
 
@@ -14,7 +16,7 @@ export default function AddMemberPage() {
       await createMember(formData);
       router.push("/members");
     } catch (e) {
-      setError(e instanceof Error ? e.message : "Something went wrong");
+      setError(e instanceof Error ? e.message : t("errors.generic"));
     }
   }
 
@@ -25,9 +27,9 @@ export default function AddMemberPage() {
           href="/members"
           className="text-muted-foreground hover:text-foreground"
         >
-          ← Wróć
+          {t("back")}
         </Link>
-        <h1 className="text-2xl font-bold">Nowy Klubowicz</h1>
+        <h1 className="text-2xl font-bold">{t("newTitle")}</h1>
       </div>
 
       <div className="card">
@@ -36,7 +38,7 @@ export default function AddMemberPage() {
           <div className="grid grid-cols-2 gap-4">
             <div className="form-group">
               <label htmlFor="firstName" className="label">
-                Imię
+                {t("firstName")}
               </label>
               <input
                 type="text"
@@ -48,7 +50,7 @@ export default function AddMemberPage() {
             </div>
             <div className="form-group">
               <label htmlFor="lastName" className="label">
-                Nazwisko
+                {t("lastName")}
               </label>
               <input
                 type="text"
@@ -62,7 +64,7 @@ export default function AddMemberPage() {
 
           <div className="form-group">
             <label htmlFor="phoneNumber" className="label">
-              Numer telefonu
+              {t("phone")}
             </label>
             <input
               type="tel"
@@ -75,7 +77,7 @@ export default function AddMemberPage() {
 
           <div className="form-group">
             <label htmlFor="notes" className="label">
-              Notatki (opcjonalnie)
+              {t("notesOptional")}
             </label>
             <textarea
               id="notes"
@@ -87,10 +89,10 @@ export default function AddMemberPage() {
 
           <div className="flex justify-end gap-3 pt-4">
             <Link href="/members" className="btn btn-secondary">
-              Anuluj
+              {t("cancel")}
             </Link>
             <button type="submit" className="btn btn-primary">
-              Zapisz
+              {t("save")}
             </button>
           </div>
         </form>

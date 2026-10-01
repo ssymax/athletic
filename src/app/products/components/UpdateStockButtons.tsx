@@ -2,8 +2,10 @@
 
 import { updateStock } from "@/app/actions/products";
 import { useTransition } from "react";
+import { useTranslations } from "next-intl";
 
 export function UpdateStockButtons({ id }: { id: string }) {
+  const t = useTranslations("products");
   const [isPending, startTransition] = useTransition();
 
   return (
@@ -12,7 +14,7 @@ export function UpdateStockButtons({ id }: { id: string }) {
         onClick={() => startTransition(() => updateStock(id, 1))}
         disabled={isPending}
         className="btn btn-outline btn-sm stock-btn"
-        title="Dodaj sztukę"
+        title={t("addPiece")}
       >
         +
       </button>
@@ -20,7 +22,7 @@ export function UpdateStockButtons({ id }: { id: string }) {
         onClick={() => startTransition(() => updateStock(id, -1))}
         disabled={isPending}
         className="btn btn-outline btn-sm stock-btn"
-        title="Usuń sztukę"
+        title={t("removePiece")}
       >
         -
       </button>

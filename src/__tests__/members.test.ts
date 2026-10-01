@@ -59,7 +59,7 @@ function makeMembership(overrides: {
 describe("getMembers", () => {
   beforeEach(() => {
     vi.clearAllMocks();
-    // Brak karnetów do automatycznego wygaszenia.
+    // No memberships to expire automatically.
     prismaMock.membership.findMany.mockResolvedValue([]);
   });
 

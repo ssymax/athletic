@@ -1,0 +1,40 @@
+{
+  "title": "Products and Inventory",
+  "add": "Add Product",
+  "colName": "Name",
+  "colCategory": "Category",
+  "colPrice": "Price",
+  "colStock": "Stock",
+  "colActions": "Actions",
+  "empty": "No products.",
+  "price": "{price} PLN",
+  "categories": {
+    "DRINKS": "Drinks",
+    "SUPPLEMENTS": "Supplements",
+    "OTHER": "Other"
+  },
+  "addPiece": "Add one",
+  "removePiece": "Remove one",
+  "delete": "Delete",
+  "deleteTitle": "Confirm deletion",
+  "deleteConfirm": "Are you sure you want to delete the product <strong>{name}</strong>?",
+  "cancel": "Cancel",
+  "deleting": "Deleting...",
+  "deleteYes": "Yes, delete",
+  "deleteFailed": "Could not delete the product.",
+  "new": {
+    "back": "← Back",
+    "title": "New Product",
+    "name": "Name",
+    "category": "Category",
+    "price": "Price (PLN)",
+    "initialStock": "Initial stock",
+    "cancel": "Cancel",
+    "submit": "Add",
+    "genericError": "Something went wrong"
+  },
+  "errors": {
+    "adminRequired": "Administrator permissions required",
+    "requiredFields": "Please fill in all required fields"
+  }
+}

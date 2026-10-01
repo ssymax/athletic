@@ -2,6 +2,7 @@
 
 import prisma from "@/lib/db";
 import { revalidatePath } from "next/cache";
+import { getTranslations } from "next-intl/server";
 
 interface CartItem {
   productId: string;
@@ -15,7 +16,8 @@ export async function processSale(
   note?: string,
 ) {
   if (items.length === 0) {
-    throw new Error("Cart is empty");
+    const t = await getTranslations("pos");
+    throw new Error(t("errors.cartEmpty"));
   }
 
   const totalAmount = items.reduce(

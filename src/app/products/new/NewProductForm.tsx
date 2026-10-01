@@ -4,8 +4,11 @@ import { createProduct } from "@/app/actions/products";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
+import { useTranslations } from "next-intl";
 
 export default function NewProductForm() {
+  const t = useTranslations("products.new");
+  const tc = useTranslations("products");
   const router = useRouter();
   const [error, setError] = useState<string | null>(null);
 
@@ -14,7 +17,7 @@ export default function NewProductForm() {
       await createProduct(formData);
       router.push("/products");
     } catch (e) {
-      setError(e instanceof Error ? e.message : "Something went wrong");
+      setError(e instanceof Error ? e.message : t("genericError"));
     }
   }
 
@@ -25,9 +28,9 @@ export default function NewProductForm() {
           href="/products"
           className="text-muted-foreground hover:text-foreground"
         >
-          ← Wróć
+          {t("back")}
         </Link>
-        <h1 className="text-2xl font-bold">Nowy Produkt</h1>
+        <h1 className="text-2xl font-bold">{t("title")}</h1>
       </div>
 
       <div className="card">
@@ -36,7 +39,7 @@ export default function NewProductForm() {
 
           <div className="form-group">
             <label htmlFor="name" className="label">
-              Nazwa
+              {t("name")}
             </label>
             <input
               type="text"
@@ -49,19 +52,21 @@ export default function NewProductForm() {
 
           <div className="form-group">
             <label htmlFor="category" className="label">
-              Kategoria
+              {t("category")}
             </label>
             <select name="category" id="category" className="input">
-              <option value="DRINKS">Napoje</option>
-              <option value="SUPPLEMENTS">Suplementy</option>
-              <option value="OTHER">Inne</option>
+              <option value="DRINKS">{tc("categories.DRINKS")}</option>
+              <option value="SUPPLEMENTS">
+                {tc("categories.SUPPLEMENTS")}
+              </option>
+              <option value="OTHER">{tc("categories.OTHER")}</option>
             </select>
           </div>
 
           <div className="grid grid-cols-2 gap-4">
             <div className="form-group">
               <label htmlFor="price" className="label">
-                Cena (PLN)
+                {t("price")}
               </label>
               <input
                 type="number"
@@ -76,7 +81,7 @@ export default function NewProductForm() {
 
             <div className="form-group">
               <label htmlFor="stock" className="label">
-                Stan początkowy
+                {t("initialStock")}
               </label>
               <input
                 type="number"
@@ -91,10 +96,10 @@ export default function NewProductForm() {
 
           <div className="flex justify-end gap-3 pt-4">
             <Link href="/products" className="btn btn-secondary">
-              Anuluj
+              {t("cancel")}
             </Link>
             <button type="submit" className="btn btn-primary">
-              Dodaj
+              {t("submit")}
             </button>
           </div>
         </form>

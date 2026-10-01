@@ -1,6 +1,7 @@
 "use client";
 
 import { deleteMembershipType } from "@/app/actions/membershipTypes";
+import { useTranslations } from "next-intl";
 import { useEffect, useState, useTransition } from "react";
 
 interface DeleteMembershipTypeButtonProps {
@@ -12,6 +13,7 @@ export function DeleteMembershipTypeButton({
   id,
   name,
 }: DeleteMembershipTypeButtonProps) {
+  const t = useTranslations("membershipTypes");
   const [isOpen, setIsOpen] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [isPending, startTransition] = useTransition();
@@ -36,9 +38,7 @@ export function DeleteMembershipTypeButton({
         await deleteMembershipType(id);
         setIsOpen(false);
       } catch (e) {
-        setError(
-          e instanceof Error ? e.message : "Nie udało się usunąć karnetu.",
-        );
+        setError(e instanceof Error ? e.message : t("errors.deleteFailed"));
       }
     });
   };
@@ -50,7 +50,7 @@ export function DeleteMembershipTypeButton({
         onClick={() => setIsOpen(true)}
         type="button"
       >
-        Usuń
+        {t("delete.button")}
       </button>
 
       {isOpen && (
@@ -68,10 +68,13 @@ export function DeleteMembershipTypeButton({
             onClick={(event) => event.stopPropagation()}
           >
             <h3 id={`delete-membership-title-${id}`} className="mb-2">
-              Potwierdź usunięcie
+              {t("delete.confirmTitle")}
             </h3>
             <p className="mb-4">
-              Czy na pewno chcesz usunąć karnet <strong>{name}</strong>?
+              {t.rich("delete.confirmText", {
+                name,
+                strong: (chunks) => <strong>{chunks}</strong>,
+              })}
             </p>
 
             {error && <div className="alert alert-error mb-4">{error}</div>}
@@ -83,7 +86,7 @@ export function DeleteMembershipTypeButton({
                 onClick={() => setIsOpen(false)}
                 disabled={isPending}
               >
-                Anuluj
+                {t("delete.cancel")}
               </button>
               <button
                 type="button"
@@ -91,7 +94,7 @@ export function DeleteMembershipTypeButton({
                 onClick={handleConfirmDelete}
                 disabled={isPending}
               >
-                {isPending ? "Usuwanie..." : "Tak, usuń"}
+                {isPending ? t("delete.pending") : t("delete.confirm")}
               </button>
             </div>
           </div>

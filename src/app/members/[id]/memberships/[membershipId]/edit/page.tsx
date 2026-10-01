@@ -3,6 +3,7 @@
 import { getMember } from "@/app/actions/members";
 import { getMembership, updateMembership } from "@/app/actions/memberships";
 import Link from "next/link";
+import { useTranslations } from "next-intl";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 
@@ -15,6 +16,7 @@ export default function EditMembershipPage({
 }: {
   params: Promise<{ id: string; membershipId: string }>;
 }) {
+  const t = useTranslations("memberships");
   const router = useRouter();
   const [membership, setMembership] = useState<MembershipWithType | null>(null);
   const [loading, setLoading] = useState(true);
@@ -47,13 +49,13 @@ export default function EditMembershipPage({
       router.push(`/members/${unwrappedParams.id}`);
       router.refresh();
     } catch (e) {
-      setError(e instanceof Error ? e.message : "Something went wrong");
+      setError(e instanceof Error ? e.message : t("errors.generic"));
     }
   }
 
-  if (loading) return <div className="p-8 text-center">Ładowanie...</div>;
+  if (loading) return <div className="p-8 text-center">{t("loading")}</div>;
   if (!membership)
-    return <div className="p-8 text-center">Nie znaleziono karnetu.</div>;
+    return <div className="p-8 text-center">{t("membershipNotFound")}</div>;
 
   const isEntry = membership.type.type === "ENTRY";
 
@@ -64,14 +66,14 @@ export default function EditMembershipPage({
           href={`/members/${unwrappedParams?.id}`}
           className="text-muted-foreground hover:text-foreground"
         >
-          ← Wróć
+          {t("back")}
         </Link>
-        <h1 className="text-2xl font-bold">Edytuj Karnet</h1>
+        <h1 className="text-2xl font-bold">{t("edit.title")}</h1>
       </div>
 
       <div className="card">
         <div className="panel-soft mb-4">
-          <p className="text-sm text-muted-foreground">Typ karnetu</p>
+          <p className="text-sm text-muted-foreground">{t("edit.type")}</p>
           <p className="font-semibold text-lg">{membership.type.name}</p>
         </div>
 
@@ -80,7 +82,7 @@ export default function EditMembershipPage({
 
           <div className="form-group">
             <label htmlFor="startDate" className="label">
-              Data rozpoczęcia
+              {t("edit.startDate")}
             </label>
             <input
               type="date"
@@ -97,7 +99,7 @@ export default function EditMembershipPage({
           {(membership.endDate || !isEntry) && (
             <div className="form-group">
               <label htmlFor="endDate" className="label">
-                Data zakończenia
+                {t("edit.endDate")}
               </label>
               <input
                 type="date"
@@ -116,7 +118,7 @@ export default function EditMembershipPage({
           {isEntry && (
             <div className="form-group">
               <label htmlFor="remainingEntries" className="label">
-                Pozostałe wejścia
+                {t("edit.remainingEntries")}
               </label>
               <input
                 type="number"
@@ -131,7 +133,7 @@ export default function EditMembershipPage({
 
           <div className="form-group">
             <label htmlFor="status" className="label">
-              Status
+              {t("edit.status")}
             </label>
             <select
               name="status"
@@ -139,19 +141,16 @@ export default function EditMembershipPage({
               className="input"
               defaultValue={membership.status}
             >
-              <option value="ACTIVE">Aktywny</option>
-              <option value="EXPIRED">Wygasły</option>
-              <option value="CANCELLED">Anulowany</option>
+              <option value="ACTIVE">{t("status.ACTIVE")}</option>
+              <option value="EXPIRED">{t("status.EXPIRED")}</option>
+              <option value="CANCELLED">{t("status.CANCELLED")}</option>
             </select>
-            <p className="text-xs text-muted mt-1">
-              Karnet po dacie zakończenia lub bez pozostałych wejść nie może być
-              aktywny.
-            </p>
+            <p className="text-xs text-muted mt-1">{t("edit.statusHint")}</p>
           </div>
 
           <div className="form-group">
             <label htmlFor="paymentMethod" className="label">
-              Metoda płatności
+              {t("edit.paymentMethod")}
             </label>
             <select
               name="paymentMethod"
@@ -159,14 +158,14 @@ export default function EditMembershipPage({
               className="input"
               defaultValue={membership.paymentMethod}
             >
-              <option value="CASH">Gotówka</option>
-              <option value="CARD">Karta</option>
+              <option value="CASH">{t("payment.CASH")}</option>
+              <option value="CARD">{t("payment.CARD")}</option>
             </select>
           </div>
 
           <div className="form-group">
             <label htmlFor="pricePaid" className="label">
-              Cena zapłacona (PLN)
+              {t("edit.pricePaid")}
             </label>
             <input
               type="number"
@@ -182,7 +181,7 @@ export default function EditMembershipPage({
 
           <div className="form-group">
             <label htmlFor="note" className="label">
-              Notatka
+              {t("edit.note")}
             </label>
             <textarea
               id="note"
@@ -198,10 +197,10 @@ export default function EditMembershipPage({
               href={`/members/${unwrappedParams?.id}`}
               className="btn btn-secondary"
             >
-              Anuluj
+              {t("cancel")}
             </Link>
             <button type="submit" className="btn btn-primary">
-              Zapisz zmiany
+              {t("edit.submit")}
             </button>
           </div>
         </form>

@@ -1,0 +1,57 @@
+{
+  "back": "← Back",
+  "loading": "Loading...",
+  "memberNotFound": "Member not found.",
+  "membershipNotFound": "Membership not found.",
+  "cancel": "Cancel",
+  "status": {
+    "ACTIVE": "Active",
+    "EXPIRED": "Expired",
+    "CANCELLED": "Cancelled"
+  },
+  "payment": {
+    "CASH": "Cash",
+    "CARD": "Card"
+  },
+  "kind": {
+    "TIME": "Time-based",
+    "ENTRY": "Entry-based"
+  },
+  "sell": {
+    "title": "Sell Membership",
+    "member": "Member",
+    "type": "Membership Type",
+    "price": "Price:",
+    "kind": "Type:",
+    "validity": "Validity:",
+    "validityTime": "{days, plural, one {# day} other {# days}}",
+    "validityEntry": "{entries, plural, one {# entry} other {# entries}} or {days, plural, one {# day} other {# days}}",
+    "validUntil": "Valid until:",
+    "toPay": "Amount due:",
+    "toPayValue": "{amount} PLN (discount: {discount} PLN)",
+    "startDate": "Start Date",
+    "discount": "Discount (PLN)",
+    "paymentMethod": "Payment Method",
+    "submit": "Sell"
+  },
+  "edit": {
+    "title": "Edit Membership",
+    "type": "Membership type",
+    "startDate": "Start date",
+    "endDate": "End date",
+    "remainingEntries": "Remaining entries",
+    "status": "Status",
+    "statusHint": "A membership past its end date or without remaining entries cannot be active.",
+    "paymentMethod": "Payment method",
+    "pricePaid": "Price paid (PLN)",
+    "note": "Note",
+    "submit": "Save changes"
+  },
+  "errors": {
+    "notFound": "Membership not found",
+    "expiredActive": "A membership past its expiry date or without remaining entries cannot have the Active status. Change the end date / number of entries or set the status to Expired.",
+    "missingFields": "Missing required fields",
+    "invalidType": "Invalid membership type",
+    "generic": "Something went wrong"
+  }
+}

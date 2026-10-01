@@ -2,13 +2,15 @@
 
 import prisma from "@/lib/db";
 import { auth } from "@/auth";
+import { getTranslations } from "next-intl/server";
 import { getExpiringMemberships as listExpiringMemberships } from "@/app/actions/memberships";
 import { EXPIRY_REMINDER_DAYS } from "@/lib/memberships";
 
 async function assertAdmin() {
   const session = await auth();
   if (session?.user?.role !== "ADMIN") {
-    throw new Error("Brak uprawnień administratora");
+    const t = await getTranslations("reports");
+    throw new Error(t("errors.adminRequired"));
   }
 }
 
@@ -176,8 +178,8 @@ export async function getSalesReport(startDate: Date, endDate: Date) {
   return report;
 }
 
-// Jedno źródło prawdy dla listy kończących się karnetów — patrz
-// getExpiringMemberships w @/app/actions/memberships.
+// Single source of truth for the list of expiring memberships — see
+// getExpiringMemberships in @/app/actions/memberships.
 export async function getExpiringMemberships(
   days: number = EXPIRY_REMINDER_DAYS,
 ) {

@@ -1,11 +1,11 @@
-// Domyślna ważność karnetu w dniach — dotyczy zarówno karnetów czasowych,
-// jak i wejściowych (te też wygasają po czasie, nie tylko po wykorzystaniu wejść).
+// Default membership validity in days — applies to both time-based and
+// entry-based memberships (the latter also expire over time, not only once entries are used up).
 export const DEFAULT_DAYS_VALID = 30;
 
-// Ile dni przed końcem karnetu przypominamy o nim na panelu głównym.
+// How many days before a membership ends we remind about it on the dashboard.
 export const EXPIRY_REMINDER_DAYS = 7;
 
-// Przez ile dni po wygaśnięciu karnetu pokazujemy klubowicza na panelu głównym.
+// For how many days after a membership expires we show the member on the dashboard.
 export const LAPSED_REMINDER_DAYS = 20;
 
 export function resolveDaysValid(
@@ -41,8 +41,8 @@ export type MembershipValidity = {
   type: { type: string };
 };
 
-// Karnet jest wyczerpany, gdy minęła data ważności (dzień końca jest jeszcze
-// ważny) albo gdy karnet wejściowy nie ma już wejść.
+// A membership is exhausted when the expiry date has passed (the end date itself
+// is still valid) or when an entry-based membership has no entries left.
 export function isMembershipExpired(
   membership: MembershipValidity,
   now: Date = new Date(),
@@ -72,15 +72,23 @@ export function isMembershipValid(
   );
 }
 
-export type MemberStatus = { label: string; badgeClass: string };
+// `labelKey` is a key in the "members" namespace.
+export type MemberStatus = {
+  labelKey: "status.inactive" | "status.noValidMembership" | "status.active";
+  badgeClass: string;
+};
 
-// Klubowicz bez ważnego karnetu nie może być pokazany jako "Aktywny".
+// A member without a valid membership cannot be shown as active.
 export function memberStatus(
   active: boolean,
   hasValidMembership: boolean,
 ): MemberStatus {
-  if (!active) return { label: "Nieaktywny", badgeClass: "badge-danger" };
+  if (!active)
+    return { labelKey: "status.inactive", badgeClass: "badge-danger" };
   if (!hasValidMembership)
-    return { label: "Brak ważnego karnetu", badgeClass: "badge-warning" };
-  return { label: "Aktywny", badgeClass: "badge-success" };
+    return {
+      labelKey: "status.noValidMembership",
+      badgeClass: "badge-warning",
+    };
+  return { labelKey: "status.active", badgeClass: "badge-success" };
 }

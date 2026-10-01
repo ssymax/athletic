@@ -4,6 +4,7 @@ import { DeleteMembershipTypeButton } from "./components/DeleteMembershipTypeBut
 import { Button } from "@/components/ui/Button";
 import { auth } from "@/auth";
 import { redirect } from "next/navigation";
+import { getFormatter, getTranslations } from "next-intl/server";
 
 export default async function MembershipTypesPage() {
   const session = await auth();
@@ -12,13 +13,15 @@ export default async function MembershipTypesPage() {
   }
 
   const types = await getMembershipTypes();
+  const t = await getTranslations("membershipTypes");
+  const format = await getFormatter();
 
   return (
     <div className="fade-in">
       <div className="flex justify-between items-center mb-6">
-        <h1>Definicje Karnetów</h1>
+        <h1>{t("list.title")}</h1>
         <Link href="/admin/memberships/new">
-          <Button>Dodaj Typ Karnetu</Button>
+          <Button>{t("list.add")}</Button>
         </Link>
       </div>
 
@@ -27,32 +30,46 @@ export default async function MembershipTypesPage() {
           <table className="table">
             <thead>
               <tr>
-                <th>Nazwa</th>
-                <th>Typ</th>
-                <th>Ważność</th>
-                <th>Cena</th>
-                <th>Akcje</th>
+                <th>{t("list.colName")}</th>
+                <th>{t("list.colType")}</th>
+                <th>{t("list.colValidity")}</th>
+                <th>{t("list.colPrice")}</th>
+                <th>{t("list.colActions")}</th>
               </tr>
             </thead>
             <tbody>
               {types.length === 0 ? (
                 <tr>
                   <td colSpan={5} className="table-empty">
-                    Brak zdefiniowanych karnetów.
+                    {t("list.empty")}
                   </td>
                 </tr>
               ) : (
                 types.map((type) => (
                   <tr key={type.id}>
                     <td className="font-medium">{type.name}</td>
-                    <td>{type.type === "TIME" ? "Czasowy" : "Wejściowy"}</td>
                     <td>
                       {type.type === "TIME"
-                        ? `${type.daysValid} dni`
-                        : `${type.entries} wejść${type.daysValid ? ` / ${type.daysValid} dni` : ""}`}
+                        ? t("list.typeTime")
+                        : t("list.typeEntry")}
+                    </td>
+                    <td>
+                      {type.type === "TIME"
+                        ? t("list.validityTime", { days: type.daysValid ?? 0 })
+                        : type.daysValid
+                          ? t("list.validityEntryWithDays", {
+                              entries: type.entries ?? 0,
+                              days: type.daysValid,
+                            })
+                          : t("list.validityEntry", {
+                              entries: type.entries ?? 0,
+                            })}
                     </td>
                     <td className="font-semibold">
-                      {type.price.toFixed(2)} zł
+                      {format.number(type.price, {
+                        style: "currency",
+                        currency: "PLN",
+                      })}
                     </td>
                     <td>
                       <DeleteMembershipTypeButton

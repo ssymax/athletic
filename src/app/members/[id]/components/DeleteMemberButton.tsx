@@ -2,6 +2,7 @@
 
 import { deleteMember } from "@/app/actions/members";
 import { useRouter } from "next/navigation";
+import { useTranslations } from "next-intl";
 import { useEffect, useState, useTransition } from "react";
 
 interface DeleteMemberButtonProps {
@@ -10,6 +11,7 @@ interface DeleteMemberButtonProps {
 }
 
 export function DeleteMemberButton({ id, fullName }: DeleteMemberButtonProps) {
+  const t = useTranslations("members");
   const router = useRouter();
   const [isOpen, setIsOpen] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -37,9 +39,7 @@ export function DeleteMemberButton({ id, fullName }: DeleteMemberButtonProps) {
         router.push("/members");
         router.refresh();
       } catch (e) {
-        setError(
-          e instanceof Error ? e.message : "Nie udało się usunąć klubowicza.",
-        );
+        setError(e instanceof Error ? e.message : t("delete.failed"));
       }
     });
   };
@@ -51,7 +51,7 @@ export function DeleteMemberButton({ id, fullName }: DeleteMemberButtonProps) {
         className="btn btn-danger w-full"
         onClick={() => setIsOpen(true)}
       >
-        Usuń klubowicza
+        {t("delete.button")}
       </button>
 
       {isOpen && (
@@ -69,10 +69,13 @@ export function DeleteMemberButton({ id, fullName }: DeleteMemberButtonProps) {
             onClick={(event) => event.stopPropagation()}
           >
             <h3 id={`delete-member-title-${id}`} className="mb-2">
-              Potwierdź usunięcie klubowicza
+              {t("delete.title")}
             </h3>
             <p className="mb-4">
-              Czy na pewno chcesz usunąć <strong>{fullName}</strong>?
+              {t.rich("delete.confirm", {
+                name: fullName,
+                strong: (chunks) => <strong>{chunks}</strong>,
+              })}
             </p>
 
             {error && <div className="alert alert-error mb-4">{error}</div>}
@@ -84,7 +87,7 @@ export function DeleteMemberButton({ id, fullName }: DeleteMemberButtonProps) {
                 onClick={() => setIsOpen(false)}
                 disabled={isPending}
               >
-                Anuluj
+                {t("cancel")}
               </button>
               <button
                 type="button"
@@ -92,7 +95,7 @@ export function DeleteMemberButton({ id, fullName }: DeleteMemberButtonProps) {
                 onClick={handleConfirmDelete}
                 disabled={isPending}
               >
-                {isPending ? "Usuwanie..." : "Tak, usuń"}
+                {isPending ? t("delete.deleting") : t("delete.yes")}
               </button>
             </div>
           </div>
