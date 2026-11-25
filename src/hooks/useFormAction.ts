@@ -1,7 +1,7 @@
 "use client";
 
 import type { ActionResult } from "@/lib/actionResult";
-import { type FormEvent, useState } from "react";
+import { type FormEvent, useRef, useState } from "react";
 
 interface UseFormActionOptions {
   action: (formData: FormData) => Promise<ActionResult>;
@@ -16,11 +16,13 @@ export function useFormAction({
 }: UseFormActionOptions) {
   const [error, setError] = useState<string | null>(null);
   const [submitting, setSubmitting] = useState(false);
+  const inFlight = useRef(false);
 
   // onSubmit zamiast <form action>: React 19 czyści pola po każdej akcji.
   async function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
-    if (submitting) return;
+    if (inFlight.current) return;
+    inFlight.current = true;
 
     const formData = new FormData(event.currentTarget);
     setError(null);
@@ -37,6 +39,7 @@ export function useFormAction({
     } catch {
       setError(fallbackError);
     }
+    inFlight.current = false;
     setSubmitting(false);
   }
 
