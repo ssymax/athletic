@@ -18,7 +18,7 @@ export function useFormAction({
   const [submitting, setSubmitting] = useState(false);
   const inFlight = useRef(false);
 
-  // onSubmit zamiast <form action>: React 19 czyści pola po każdej akcji.
+  // onSubmit instead of <form action>: React 19 resets fields after every action.
   async function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
     if (inFlight.current) return;
@@ -31,7 +31,7 @@ export function useFormAction({
     try {
       const result = await action(formData);
       if (result.success) {
-        // Przycisk zostaje zablokowany do końca nawigacji.
+        // Keep the button disabled until navigation completes.
         onSuccess();
         return;
       }
