@@ -8,7 +8,7 @@ import { useRouter } from "next/navigation";
 export default function NewProductForm() {
   const router = useRouter();
 
-  const { error, submitting, handleSubmit } = useFormAction({
+  const { error, submitDisabled, handleSubmit } = useFormAction({
     action: createProduct,
     onSuccess: () => {
       router.push("/products");
@@ -94,7 +94,7 @@ export default function NewProductForm() {
             <button
               type="submit"
               className="btn btn-primary"
-              disabled={submitting}
+              disabled={submitDisabled}
             >
               Dodaj
             </button>

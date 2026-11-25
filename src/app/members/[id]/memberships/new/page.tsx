@@ -13,7 +13,8 @@ import { useEffect, useState } from "react";
 type MemberDetails = NonNullable<Awaited<ReturnType<typeof getMember>>>;
 type MembershipType = Awaited<ReturnType<typeof getMembershipTypes>>[number];
 
-const SAVE_ERROR = "Nie udało się sprzedać karnetu. Spróbuj ponownie.";
+const SAVE_ERROR =
+  "Nie otrzymano potwierdzenia sprzedaży. Zanim spróbujesz ponownie, sprawdź, czy karnet nie został już dodany.";
 
 export default function NewMembershipPage({
   params,
@@ -52,7 +53,7 @@ export default function NewMembershipPage({
     });
   }, [unwrappedParams]);
 
-  const { error, submitting, handleSubmit } = useFormAction({
+  const { error, submitDisabled, handleSubmit } = useFormAction({
     action: async (formData) => {
       if (!unwrappedParams) return actionError(SAVE_ERROR);
       return sellMembership(unwrappedParams.id, formData);
@@ -198,7 +199,7 @@ export default function NewMembershipPage({
             <button
               type="submit"
               className="btn btn-primary"
-              disabled={submitting}
+              disabled={submitDisabled}
             >
               Sprzedaj
             </button>

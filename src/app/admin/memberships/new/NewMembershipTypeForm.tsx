@@ -11,7 +11,7 @@ export default function NewMembershipTypeForm() {
   const router = useRouter();
   const [type, setType] = useState<string>("TIME");
 
-  const { error, submitting, handleSubmit } = useFormAction({
+  const { error, submitDisabled, handleSubmit } = useFormAction({
     action: createMembershipType,
     onSuccess: () => {
       router.push("/admin/memberships");
@@ -150,7 +150,7 @@ export default function NewMembershipTypeForm() {
             <button
               type="submit"
               className="btn btn-primary"
-              disabled={submitting}
+              disabled={submitDisabled}
             >
               Stwórz
             </button>

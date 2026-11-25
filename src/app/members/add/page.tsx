@@ -8,7 +8,7 @@ import { useRouter } from "next/navigation";
 export default function AddMemberPage() {
   const router = useRouter();
 
-  const { error, submitting, handleSubmit } = useFormAction({
+  const { error, submitDisabled, handleSubmit } = useFormAction({
     action: createMember,
     onSuccess: () => {
       router.push("/members");
@@ -90,7 +90,7 @@ export default function AddMemberPage() {
             <button
               type="submit"
               className="btn btn-primary"
-              disabled={submitting}
+              disabled={submitDisabled}
             >
               Zapisz
             </button>

@@ -85,7 +85,9 @@ export default function POSPage() {
       setTimeout(() => setSuccess(false), 3000);
       getProducts().then(setProducts);
     } catch {
-      setError("Nie udało się zrealizować sprzedaży. Spróbuj ponownie.");
+      setError(
+        "Nie otrzymano potwierdzenia sprzedaży. Zanim spróbujesz ponownie, sprawdź stan magazynowy i raport sprzedaży.",
+      );
     } finally {
       setProcessing(false);
     }

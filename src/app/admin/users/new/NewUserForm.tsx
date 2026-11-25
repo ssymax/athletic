@@ -8,7 +8,7 @@ import { useRouter } from "next/navigation";
 export default function NewUserForm() {
   const router = useRouter();
 
-  const { error, submitting, handleSubmit } = useFormAction({
+  const { error, submitDisabled, handleSubmit } = useFormAction({
     action: createUser,
     onSuccess: () => {
       router.push("/admin/users");
@@ -83,7 +83,7 @@ export default function NewUserForm() {
             <button
               type="submit"
               className="btn btn-primary"
-              disabled={submitting}
+              disabled={submitDisabled}
             >
               Dodaj użytkownika
             </button>

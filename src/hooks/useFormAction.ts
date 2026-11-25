@@ -1,12 +1,22 @@
 "use client";
 
 import type { ActionResult } from "@/lib/actionResult";
-import { type FormEvent, useRef, useState } from "react";
+import { type FormEvent, useRef, useState, useSyncExternalStore } from "react";
 
 interface UseFormActionOptions {
   action: (formData: FormData) => Promise<ActionResult>;
   onSuccess: () => void;
   fallbackError: string;
+}
+
+const subscribeNoop = () => () => {};
+
+function useHydrated() {
+  return useSyncExternalStore(
+    subscribeNoop,
+    () => true,
+    () => false,
+  );
 }
 
 export function useFormAction({
@@ -17,6 +27,13 @@ export function useFormAction({
   const [error, setError] = useState<string | null>(null);
   const [submitting, setSubmitting] = useState(false);
   const inFlight = useRef(false);
+  const hydrated = useHydrated();
+
+  function fail(message: string) {
+    setError(message);
+    inFlight.current = false;
+    setSubmitting(false);
+  }
 
   // onSubmit instead of <form action>: React 19 resets fields after every action.
   async function handleSubmit(event: FormEvent<HTMLFormElement>) {
@@ -28,20 +45,27 @@ export function useFormAction({
     setError(null);
     setSubmitting(true);
 
+    let result: ActionResult;
     try {
-      const result = await action(formData);
-      if (result.success) {
-        // Keep the button disabled until navigation completes.
-        onSuccess();
-        return;
-      }
-      setError(result.error);
+      result = await action(formData);
     } catch {
-      setError(fallbackError);
+      fail(fallbackError);
+      return;
     }
-    inFlight.current = false;
-    setSubmitting(false);
+
+    if (!result) {
+      fail(fallbackError);
+      return;
+    }
+    if (!result.success) {
+      fail(result.error);
+      return;
+    }
+
+    // Keep the button disabled until navigation completes.
+    onSuccess();
   }
 
-  return { error, submitting, handleSubmit };
+  // Before hydration a native submit would silently drop the form data.
+  return { error, submitDisabled: submitting || !hydrated, handleSubmit };
 }

@@ -38,7 +38,7 @@ export default function EditMemberPage({
     });
   }, [unwrappedParams]);
 
-  const { error, submitting, handleSubmit } = useFormAction({
+  const { error, submitDisabled, handleSubmit } = useFormAction({
     action: async (formData) => {
       if (!unwrappedParams) return actionError(SAVE_ERROR);
       return updateMember(unwrappedParams.id, formData);
@@ -145,7 +145,7 @@ export default function EditMemberPage({
             <button
               type="submit"
               className="btn btn-primary"
-              disabled={submitting}
+              disabled={submitDisabled}
             >
               Zapisz Zmiany
             </button>
