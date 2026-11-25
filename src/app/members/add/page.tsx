@@ -1,22 +1,20 @@
 "use client";
 
 import { createMember } from "@/app/actions/members";
+import { useFormAction } from "@/hooks/useFormAction";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { useState } from "react";
 
 export default function AddMemberPage() {
   const router = useRouter();
-  const [error, setError] = useState<string | null>(null);
 
-  async function handleSubmit(formData: FormData) {
-    try {
-      await createMember(formData);
+  const { error, submitting, handleSubmit } = useFormAction({
+    action: createMember,
+    onSuccess: () => {
       router.push("/members");
-    } catch (e) {
-      setError(e instanceof Error ? e.message : "Something went wrong");
-    }
-  }
+    },
+    fallbackError: "Nie udało się dodać klubowicza. Spróbuj ponownie.",
+  });
 
   return (
     <div className="container mx-auto py-8 max-w-lg">
@@ -31,7 +29,7 @@ export default function AddMemberPage() {
       </div>
 
       <div className="card">
-        <form action={handleSubmit} className="space-y-4">
+        <form method="post" onSubmit={handleSubmit} className="space-y-4">
           {error && <div className="alert alert-error">{error}</div>}
           <div className="grid grid-cols-2 gap-4">
             <div className="form-group">
@@ -89,7 +87,11 @@ export default function AddMemberPage() {
             <Link href="/members" className="btn btn-secondary">
               Anuluj
             </Link>
-            <button type="submit" className="btn btn-primary">
+            <button
+              type="submit"
+              className="btn btn-primary"
+              disabled={submitting}
+            >
               Zapisz
             </button>
           </div>

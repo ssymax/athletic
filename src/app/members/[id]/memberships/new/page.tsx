@@ -4,12 +4,16 @@ import { getMember } from "@/app/actions/members";
 import { getMembershipTypes } from "@/app/actions/membershipTypes";
 import { sellMembership } from "@/app/actions/memberships";
 import { addDays, resolveDaysValid } from "@/lib/memberships";
+import { useFormAction } from "@/hooks/useFormAction";
+import { actionError } from "@/lib/actionResult";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 
 type MemberDetails = NonNullable<Awaited<ReturnType<typeof getMember>>>;
 type MembershipType = Awaited<ReturnType<typeof getMembershipTypes>>[number];
+
+const SAVE_ERROR = "Nie udało się sprzedać karnetu. Spróbuj ponownie.";
 
 export default function NewMembershipPage({
   params,
@@ -20,7 +24,6 @@ export default function NewMembershipPage({
   const [member, setMember] = useState<MemberDetails | null>(null);
   const [types, setTypes] = useState<MembershipType[]>([]);
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
 
   const [unwrappedParams, setUnwrappedParams] = useState<{ id: string } | null>(
     null,
@@ -49,16 +52,17 @@ export default function NewMembershipPage({
     });
   }, [unwrappedParams]);
 
-  async function handleSubmit(formData: FormData) {
-    if (!unwrappedParams) return;
-    try {
-      await sellMembership(unwrappedParams.id, formData);
-      router.push(`/members/${unwrappedParams.id}`);
+  const { error, submitting, handleSubmit } = useFormAction({
+    action: async (formData) => {
+      if (!unwrappedParams) return actionError(SAVE_ERROR);
+      return sellMembership(unwrappedParams.id, formData);
+    },
+    onSuccess: () => {
+      router.push(`/members/${unwrappedParams?.id}`);
       router.refresh();
-    } catch (e) {
-      setError(e instanceof Error ? e.message : "Something went wrong");
-    }
-  }
+    },
+    fallbackError: SAVE_ERROR,
+  });
 
   const selectedTypeData = types.find((t) => t.id === selectedType);
   const effectiveDaysValid = selectedTypeData
@@ -92,7 +96,7 @@ export default function NewMembershipPage({
           </p>
         </div>
 
-        <form action={handleSubmit} className="space-y-4">
+        <form method="post" onSubmit={handleSubmit} className="space-y-4">
           {error && <div className="alert alert-error">{error}</div>}
 
           <div className="form-group">
@@ -191,7 +195,11 @@ export default function NewMembershipPage({
             <Link href={`/members/${member.id}`} className="btn btn-secondary">
               Anuluj
             </Link>
-            <button type="submit" className="btn btn-primary">
+            <button
+              type="submit"
+              className="btn btn-primary"
+              disabled={submitting}
+            >
               Sprzedaj
             </button>
           </div>

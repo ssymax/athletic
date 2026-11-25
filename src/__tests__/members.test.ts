@@ -162,15 +162,42 @@ describe("getMembers", () => {
 describe("createMember", () => {
   beforeEach(() => vi.clearAllMocks());
 
-  it("throws when required fields are missing", async () => {
+  it("returns an error when required fields are missing", async () => {
     const fd = new FormData();
     fd.set("firstName", "");
     fd.set("lastName", "Kowalski");
     fd.set("phoneNumber", "");
 
-    await expect(createMember(fd)).rejects.toThrow(
-      "Please fill in all required fields",
-    );
+    expect(await createMember(fd)).toEqual({
+      success: false,
+      error: "Uzupełnij wszystkie wymagane pola",
+    });
+    expect(prismaMock.member.create).not.toHaveBeenCalled();
+  });
+
+  it("returns an error when the phone number is already taken", async () => {
+    prismaMock.member.create.mockRejectedValueOnce({ code: "P2002" });
+
+    const fd = new FormData();
+    fd.set("firstName", "Anna");
+    fd.set("lastName", "Nowak");
+    fd.set("phoneNumber", "123456789");
+
+    expect(await createMember(fd)).toEqual({
+      success: false,
+      error: "Klubowicz z tym numerem telefonu już istnieje",
+    });
+  });
+
+  it("rethrows unexpected database errors", async () => {
+    prismaMock.member.create.mockRejectedValueOnce(new Error("db down"));
+
+    const fd = new FormData();
+    fd.set("firstName", "Anna");
+    fd.set("lastName", "Nowak");
+    fd.set("phoneNumber", "123456789");
+
+    await expect(createMember(fd)).rejects.toThrow("db down");
   });
 
   it("creates member and returns success", async () => {
@@ -219,6 +246,20 @@ describe("updateMember", () => {
         notes: "",
         active: true,
       },
+    });
+  });
+
+  it("returns an error when the phone number is already taken", async () => {
+    prismaMock.member.update.mockRejectedValueOnce({ code: "P2002" });
+
+    const fd = new FormData();
+    fd.set("firstName", "Piotr");
+    fd.set("lastName", "W");
+    fd.set("phoneNumber", "123456789");
+
+    expect(await updateMember("id", fd)).toEqual({
+      success: false,
+      error: "Klubowicz z tym numerem telefonu już istnieje",
     });
   });
 

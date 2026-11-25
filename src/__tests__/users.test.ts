@@ -76,40 +76,52 @@ describe("createUser", () => {
     await expect(createUser(fd)).rejects.toThrow("Brak uprawnień administratora");
   });
 
-  it("throws when username is empty", async () => {
+  it("returns an error when username is empty", async () => {
     authMock.mockResolvedValue(adminSession);
     const fd = new FormData();
     fd.set("username", "  ");
     fd.set("password", "securepass");
     fd.set("role", "RECEPTION");
-    await expect(createUser(fd)).rejects.toThrow("Login jest wymagany");
+    await expect(createUser(fd)).resolves.toEqual({
+      success: false,
+      error: "Login jest wymagany",
+    });
   });
 
-  it("throws when password is empty", async () => {
+  it("returns an error when password is empty", async () => {
     authMock.mockResolvedValue(adminSession);
     const fd = new FormData();
     fd.set("username", "newuser");
     fd.set("password", "");
     fd.set("role", "RECEPTION");
-    await expect(createUser(fd)).rejects.toThrow("Hasło jest wymagany");
+    await expect(createUser(fd)).resolves.toEqual({
+      success: false,
+      error: "Hasło jest wymagane",
+    });
   });
 
-  it("throws when password is shorter than 6 characters", async () => {
+  it("returns an error when password is shorter than 6 characters", async () => {
     authMock.mockResolvedValue(adminSession);
     const fd = new FormData();
     fd.set("username", "newuser");
     fd.set("password", "abc");
     fd.set("role", "RECEPTION");
-    await expect(createUser(fd)).rejects.toThrow("Hasło musi mieć minimum 6 znaków");
+    await expect(createUser(fd)).resolves.toEqual({
+      success: false,
+      error: "Hasło musi mieć minimum 6 znaków",
+    });
   });
 
-  it("throws when role is invalid", async () => {
+  it("returns an error when role is invalid", async () => {
     authMock.mockResolvedValue(adminSession);
     const fd = new FormData();
     fd.set("username", "newuser");
     fd.set("password", "securepassword");
     fd.set("role", "SUPERUSER");
-    await expect(createUser(fd)).rejects.toThrow("Nieprawidłowa rola użytkownika");
+    await expect(createUser(fd)).resolves.toEqual({
+      success: false,
+      error: "Nieprawidłowa rola użytkownika",
+    });
   });
 
   it("creates user with hashed password for valid input", async () => {
@@ -132,7 +144,7 @@ describe("createUser", () => {
     });
   });
 
-  it("throws duplicate username error on P2002", async () => {
+  it("returns duplicate username error on P2002", async () => {
     authMock.mockResolvedValue(adminSession);
     prismaMock.user.create.mockRejectedValue({ code: "P2002" });
 
@@ -141,9 +153,10 @@ describe("createUser", () => {
     fd.set("password", "password123");
     fd.set("role", "ADMIN");
 
-    await expect(createUser(fd)).rejects.toThrow(
-      "Użytkownik o takim loginie już istnieje",
-    );
+    await expect(createUser(fd)).resolves.toEqual({
+      success: false,
+      error: "Użytkownik o takim loginie już istnieje",
+    });
   });
 });
 
@@ -188,7 +201,7 @@ describe("updateUser", () => {
     expect(updateCall.data.password).toBe("hashed_password");
   });
 
-  it("throws when new password is too short", async () => {
+  it("returns an error when new password is too short", async () => {
     authMock.mockResolvedValue(adminSession);
 
     const fd = new FormData();
@@ -196,12 +209,13 @@ describe("updateUser", () => {
     fd.set("password", "abc"); // too short
     fd.set("role", "RECEPTION");
 
-    await expect(updateUser("id", fd)).rejects.toThrow(
-      "Hasło musi mieć minimum 6 znaków",
-    );
+    await expect(updateUser("id", fd)).resolves.toEqual({
+      success: false,
+      error: "Hasło musi mieć minimum 6 znaków",
+    });
   });
 
-  it("throws on duplicate username during update (P2002)", async () => {
+  it("returns an error on duplicate username during update (P2002)", async () => {
     authMock.mockResolvedValue(adminSession);
     prismaMock.user.update.mockRejectedValue({ code: "P2002" });
 
@@ -210,8 +224,9 @@ describe("updateUser", () => {
     fd.set("password", "");
     fd.set("role", "ADMIN");
 
-    await expect(updateUser("id", fd)).rejects.toThrow(
-      "Użytkownik o takim loginie już istnieje",
-    );
+    await expect(updateUser("id", fd)).resolves.toEqual({
+      success: false,
+      error: "Użytkownik o takim loginie już istnieje",
+    });
   });
 });

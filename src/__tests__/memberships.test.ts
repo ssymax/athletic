@@ -38,15 +38,16 @@ function futureDate(daysFromNow: number) {
 describe("sellMembership", () => {
   beforeEach(() => vi.clearAllMocks());
 
-  it("throws when required fields are missing", async () => {
+  it("returns an error when required fields are missing", async () => {
     const fd = new FormData();
     // Missing typeId, startDate, paymentMethod
-    await expect(sellMembership("memberId", fd)).rejects.toThrow(
-      "Missing required fields",
-    );
+    await expect(sellMembership("memberId", fd)).resolves.toEqual({
+      success: false,
+      error: "Uzupełnij wszystkie wymagane pola",
+    });
   });
 
-  it("throws when membership type is not found", async () => {
+  it("returns an error when membership type is not found", async () => {
     prismaMock.membershipType.findUnique.mockResolvedValue(null);
 
     const fd = new FormData();
@@ -54,9 +55,10 @@ describe("sellMembership", () => {
     fd.set("startDate", "2025-01-01");
     fd.set("paymentMethod", "CASH");
 
-    await expect(sellMembership("memberId", fd)).rejects.toThrow(
-      "Invalid membership type",
-    );
+    await expect(sellMembership("memberId", fd)).resolves.toEqual({
+      success: false,
+      error: "Wybrany typ karnetu nie istnieje",
+    });
   });
 
   it("creates TIME membership with calculated endDate", async () => {
@@ -189,11 +191,12 @@ describe("updateMembership", () => {
     return fd;
   }
 
-  it("throws when the membership does not exist", async () => {
+  it("returns an error when the membership does not exist", async () => {
     prismaMock.membership.findUnique.mockResolvedValue(null);
-    await expect(updateMembership("ms1", "m1", formData())).rejects.toThrow(
-      "Nie znaleziono karnetu",
-    );
+    await expect(updateMembership("ms1", "m1", formData())).resolves.toEqual({
+      success: false,
+      error: "Nie znaleziono karnetu",
+    });
   });
 
   it("saves an edit and records it in the history", async () => {
@@ -218,9 +221,10 @@ describe("updateMembership", () => {
       type: { type: "TIME" },
     });
 
-    await expect(
-      updateMembership("ms1", "m1", formData({ endDate: futureDate(-1) })),
-    ).rejects.toThrow(/nie może mieć statusu Aktywny/);
+    await expect(updateMembership("ms1", "m1", formData({ endDate: futureDate(-1) }))).resolves.toEqual({
+      success: false,
+      error: expect.stringMatching(/nie może mieć statusu Aktywny/),
+    });
     expect(prismaMock.membership.update).not.toHaveBeenCalled();
   });
 
@@ -230,9 +234,10 @@ describe("updateMembership", () => {
       type: { type: "ENTRY" },
     });
 
-    await expect(
-      updateMembership("ms1", "m1", formData({ remainingEntries: "0" })),
-    ).rejects.toThrow(/nie może mieć statusu Aktywny/);
+    await expect(updateMembership("ms1", "m1", formData({ remainingEntries: "0" }))).resolves.toEqual({
+      success: false,
+      error: expect.stringMatching(/nie może mieć statusu Aktywny/),
+    });
     expect(prismaMock.membership.update).not.toHaveBeenCalled();
   });
 

@@ -2,23 +2,22 @@
 
 import { createMembershipType } from "@/app/actions/membershipTypes";
 import { DEFAULT_DAYS_VALID } from "@/lib/memberships";
+import { useFormAction } from "@/hooks/useFormAction";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 
 export default function NewMembershipTypeForm() {
   const router = useRouter();
-  const [error, setError] = useState<string | null>(null);
   const [type, setType] = useState<string>("TIME");
 
-  async function handleSubmit(formData: FormData) {
-    try {
-      await createMembershipType(formData);
+  const { error, submitting, handleSubmit } = useFormAction({
+    action: createMembershipType,
+    onSuccess: () => {
       router.push("/admin/memberships");
-    } catch (e) {
-      setError(e instanceof Error ? e.message : "Something went wrong");
-    }
-  }
+    },
+    fallbackError: "Nie udało się utworzyć karnetu. Spróbuj ponownie.",
+  });
 
   return (
     <div className="container mx-auto py-8 max-w-lg">
@@ -33,7 +32,7 @@ export default function NewMembershipTypeForm() {
       </div>
 
       <div className="card">
-        <form action={handleSubmit} className="space-y-4">
+        <form method="post" onSubmit={handleSubmit} className="space-y-4">
           {error && <div className="alert alert-error">{error}</div>}
 
           <div className="form-group">
@@ -148,7 +147,11 @@ export default function NewMembershipTypeForm() {
             <Link href="/admin/memberships" className="btn btn-secondary">
               Anuluj
             </Link>
-            <button type="submit" className="btn btn-primary">
+            <button
+              type="submit"
+              className="btn btn-primary"
+              disabled={submitting}
+            >
               Stwórz
             </button>
           </div>

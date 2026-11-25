@@ -50,19 +50,20 @@ describe("createMembershipType", () => {
     );
   });
 
-  it("throws when required fields are missing", async () => {
+  it("returns an error when required fields are missing", async () => {
     authMock.mockResolvedValue(adminSession);
     const fd = new FormData();
     fd.set("name", "");
     fd.set("scope", "GYM");
     fd.set("type", "TIME");
     fd.set("price", "NaN");
-    await expect(createMembershipType(fd)).rejects.toThrow(
-      "Please fill in all required fields",
-    );
+    await expect(createMembershipType(fd)).resolves.toEqual({
+      success: false,
+      error: "Uzupełnij wszystkie wymagane pola",
+    });
   });
 
-  it("throws for TIME type without daysValid", async () => {
+  it("returns an error for TIME type without daysValid", async () => {
     authMock.mockResolvedValue(adminSession);
     const fd = new FormData();
     fd.set("name", "Monthly");
@@ -70,12 +71,13 @@ describe("createMembershipType", () => {
     fd.set("type", "TIME");
     fd.set("price", "99");
     // no daysValid
-    await expect(createMembershipType(fd)).rejects.toThrow(
-      "Time-based memberships require days validity",
-    );
+    await expect(createMembershipType(fd)).resolves.toEqual({
+      success: false,
+      error: "Karnet czasowy wymaga liczby dni ważności",
+    });
   });
 
-  it("throws for ENTRY type without entries count", async () => {
+  it("returns an error for ENTRY type without entries count", async () => {
     authMock.mockResolvedValue(adminSession);
     const fd = new FormData();
     fd.set("name", "10 wejść");
@@ -83,9 +85,10 @@ describe("createMembershipType", () => {
     fd.set("type", "ENTRY");
     fd.set("price", "120");
     // no entries
-    await expect(createMembershipType(fd)).rejects.toThrow(
-      "Entry-based memberships require number of entries",
-    );
+    await expect(createMembershipType(fd)).resolves.toEqual({
+      success: false,
+      error: "Karnet wejściowy wymaga liczby wejść",
+    });
   });
 
   it("creates TIME membership type successfully", async () => {
@@ -149,13 +152,14 @@ describe("deleteMembershipType", () => {
     );
   });
 
-  it("throws when membership type is linked to existing memberships", async () => {
+  it("returns an error when membership type is linked to existing memberships", async () => {
     authMock.mockResolvedValue(adminSession);
     prismaMock.membership.count.mockResolvedValue(3);
 
-    await expect(deleteMembershipType("type-with-sales")).rejects.toThrow(
-      "Nie można usunąć karnetu, który był już sprzedany.",
-    );
+    await expect(deleteMembershipType("type-with-sales")).resolves.toEqual({
+      success: false,
+      error: "Nie można usunąć karnetu, który był już sprzedany.",
+    });
     expect(prismaMock.membershipType.delete).not.toHaveBeenCalled();
   });
 

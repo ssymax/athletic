@@ -33,12 +33,14 @@ export function DeleteMembershipTypeButton({
     setError(null);
     startTransition(async () => {
       try {
-        await deleteMembershipType(id);
+        const result = await deleteMembershipType(id);
+        if (!result.success) {
+          setError(result.error);
+          return;
+        }
         setIsOpen(false);
-      } catch (e) {
-        setError(
-          e instanceof Error ? e.message : "Nie udało się usunąć karnetu.",
-        );
+      } catch {
+        setError("Nie udało się usunąć karnetu.");
       }
     });
   };

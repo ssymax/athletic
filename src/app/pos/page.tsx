@@ -68,7 +68,7 @@ export default function POSPage() {
     setError(null);
 
     try {
-      await processSale(
+      const result = await processSale(
         cart.map((item) => ({
           productId: item.id,
           quantity: item.quantity,
@@ -76,12 +76,16 @@ export default function POSPage() {
         })),
         paymentMethod,
       );
+      if (!result.success) {
+        setError(result.error);
+        return;
+      }
       setCart([]);
       setSuccess(true);
       setTimeout(() => setSuccess(false), 3000);
       getProducts().then(setProducts);
-    } catch (e) {
-      setError(e instanceof Error ? e.message : "Transaction failed");
+    } catch {
+      setError("Nie udało się zrealizować sprzedaży. Spróbuj ponownie.");
     } finally {
       setProcessing(false);
     }

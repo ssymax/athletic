@@ -32,10 +32,8 @@ export function DeleteProductButton({ id, name }: DeleteProductButtonProps) {
       try {
         await deleteProduct(id);
         setIsOpen(false);
-      } catch (e) {
-        setError(
-          e instanceof Error ? e.message : "Nie udało się usunąć produktu.",
-        );
+      } catch {
+        setError("Nie udało się usunąć produktu.");
       }
     });
   };
