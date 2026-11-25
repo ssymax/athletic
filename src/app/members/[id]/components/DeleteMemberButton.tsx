@@ -36,10 +36,8 @@ export function DeleteMemberButton({ id, fullName }: DeleteMemberButtonProps) {
         await deleteMember(id);
         router.push("/members");
         router.refresh();
-      } catch (e) {
-        setError(
-          e instanceof Error ? e.message : "Nie udało się usunąć klubowicza.",
-        );
+      } catch {
+        setError("Nie udało się usunąć klubowicza.");
       }
     });
   };

@@ -3,6 +3,7 @@
 import prisma from "@/lib/db";
 import { revalidatePath } from "next/cache";
 import { auth } from "@/auth";
+import { type ActionResult, actionError } from "@/lib/actionResult";
 
 async function assertAdmin() {
   const session = await auth();
@@ -23,7 +24,7 @@ export async function getProducts(query?: string) {
   });
 }
 
-export async function createProduct(formData: FormData) {
+export async function createProduct(formData: FormData): Promise<ActionResult> {
   await assertAdmin();
 
   const name = formData.get("name") as string;
@@ -32,7 +33,7 @@ export async function createProduct(formData: FormData) {
   const stock = parseInt(formData.get("stock") as string) || 0;
 
   if (!name || !category || isNaN(price)) {
-    throw new Error("Please fill in all required fields");
+    return actionError("Uzupełnij wszystkie wymagane pola");
   }
 
   await prisma.product.create({

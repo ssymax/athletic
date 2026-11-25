@@ -1,22 +1,20 @@
 "use client";
 
 import { createProduct } from "@/app/actions/products";
+import { useFormAction } from "@/hooks/useFormAction";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { useState } from "react";
 
 export default function NewProductForm() {
   const router = useRouter();
-  const [error, setError] = useState<string | null>(null);
 
-  async function handleSubmit(formData: FormData) {
-    try {
-      await createProduct(formData);
+  const { error, submitDisabled, handleSubmit } = useFormAction({
+    action: createProduct,
+    onSuccess: () => {
       router.push("/products");
-    } catch (e) {
-      setError(e instanceof Error ? e.message : "Something went wrong");
-    }
-  }
+    },
+    fallbackError: "Nie udało się dodać produktu. Spróbuj ponownie.",
+  });
 
   return (
     <div className="container mx-auto py-8 max-w-lg">
@@ -31,7 +29,7 @@ export default function NewProductForm() {
       </div>
 
       <div className="card">
-        <form action={handleSubmit} className="space-y-4">
+        <form method="post" onSubmit={handleSubmit} className="space-y-4">
           {error && <div className="alert alert-error">{error}</div>}
 
           <div className="form-group">
@@ -93,7 +91,11 @@ export default function NewProductForm() {
             <Link href="/products" className="btn btn-secondary">
               Anuluj
             </Link>
-            <button type="submit" className="btn btn-primary">
+            <button
+              type="submit"
+              className="btn btn-primary"
+              disabled={submitDisabled}
+            >
               Dodaj
             </button>
           </div>

@@ -1,11 +1,15 @@
 "use client";
 
 import { getMember, updateMember } from "@/app/actions/members";
+import { useFormAction } from "@/hooks/useFormAction";
+import { actionError } from "@/lib/actionResult";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 
 type MemberDetails = NonNullable<Awaited<ReturnType<typeof getMember>>>;
+
+const SAVE_ERROR = "Nie udało się zapisać zmian. Spróbuj ponownie.";
 
 export default function EditMemberPage({
   params,
@@ -15,7 +19,6 @@ export default function EditMemberPage({
   const router = useRouter();
   const [member, setMember] = useState<MemberDetails | null>(null);
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
 
   // Unwrap params
   const [unwrappedParams, setUnwrappedParams] = useState<{ id: string } | null>(
@@ -35,16 +38,17 @@ export default function EditMemberPage({
     });
   }, [unwrappedParams]);
 
-  async function handleSubmit(formData: FormData) {
-    if (!unwrappedParams) return;
-    try {
-      await updateMember(unwrappedParams.id, formData);
-      router.push(`/members/${unwrappedParams.id}`);
+  const { error, submitDisabled, handleSubmit } = useFormAction({
+    action: async (formData) => {
+      if (!unwrappedParams) return actionError(SAVE_ERROR);
+      return updateMember(unwrappedParams.id, formData);
+    },
+    onSuccess: () => {
+      router.push(`/members/${unwrappedParams?.id}`);
       router.refresh();
-    } catch (e) {
-      setError(e instanceof Error ? e.message : "Something went wrong");
-    }
-  }
+    },
+    fallbackError: SAVE_ERROR,
+  });
 
   if (loading) return <div className="p-8 text-center">Ładowanie...</div>;
   if (!member)
@@ -63,7 +67,7 @@ export default function EditMemberPage({
       </div>
 
       <div className="card">
-        <form action={handleSubmit} className="space-y-4">
+        <form method="post" onSubmit={handleSubmit} className="space-y-4">
           {error && <div className="alert alert-error">{error}</div>}
           <div className="grid grid-cols-2 gap-4">
             <div className="form-group">
@@ -138,7 +142,11 @@ export default function EditMemberPage({
             <Link href={`/members/${member.id}`} className="btn btn-secondary">
               Anuluj
             </Link>
-            <button type="submit" className="btn btn-primary">
+            <button
+              type="submit"
+              className="btn btn-primary"
+              disabled={submitDisabled}
+            >
               Zapisz Zmiany
             </button>
           </div>

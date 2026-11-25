@@ -3,6 +3,7 @@
 import prisma from "@/lib/db";
 import { revalidatePath } from "next/cache";
 import { auth } from "@/auth";
+import { type ActionResult, actionError } from "@/lib/actionResult";
 import { resolveDaysValid } from "@/lib/memberships";
 
 async function assertAdmin() {
@@ -21,7 +22,9 @@ export async function getMembershipTypes() {
   });
 }
 
-export async function createMembershipType(formData: FormData) {
+export async function createMembershipType(
+  formData: FormData,
+): Promise<ActionResult> {
   await assertAdmin();
 
   const name = formData.get("name") as string;
@@ -36,15 +39,15 @@ export async function createMembershipType(formData: FormData) {
     : null;
 
   if (!name || !scope || !type || isNaN(price)) {
-    throw new Error("Please fill in all required fields");
+    return actionError("Uzupełnij wszystkie wymagane pola");
   }
 
   if (type === "TIME" && !daysValidInput) {
-    throw new Error("Time-based memberships require days validity");
+    return actionError("Karnet czasowy wymaga liczby dni ważności");
   }
 
   if (type === "ENTRY" && !entries) {
-    throw new Error("Entry-based memberships require number of entries");
+    return actionError("Karnet wejściowy wymaga liczby wejść");
   }
 
   // Karnety wejściowe też mają ważność w dniach — domyślnie 30 dni.
@@ -62,9 +65,10 @@ export async function createMembershipType(formData: FormData) {
   });
 
   revalidatePath("/admin/memberships");
+  return { success: true };
 }
 
-export async function deleteMembershipType(id: string) {
+export async function deleteMembershipType(id: string): Promise<ActionResult> {
   await assertAdmin();
 
   const linkedMemberships = await prisma.membership.count({
@@ -72,7 +76,7 @@ export async function deleteMembershipType(id: string) {
   });
 
   if (linkedMemberships > 0) {
-    throw new Error("Nie można usunąć karnetu, który był już sprzedany.");
+    return actionError("Nie można usunąć karnetu, który był już sprzedany.");
   }
 
   await prisma.membershipType.delete({
@@ -80,4 +84,5 @@ export async function deleteMembershipType(id: string) {
   });
 
   revalidatePath("/admin/memberships");
+  return { success: true };
 }

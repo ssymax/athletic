@@ -2,6 +2,7 @@
 
 import prisma from "@/lib/db";
 import { revalidatePath } from "next/cache";
+import { type ActionResult, actionError } from "@/lib/actionResult";
 import {
   addDays,
   daysLeft,
@@ -142,7 +143,7 @@ export async function updateMembership(
   membershipId: string,
   memberId: string,
   formData: FormData,
-) {
+): Promise<ActionResult> {
   const startDateStr = formData.get("startDate") as string;
   const endDateStr = formData.get("endDate") as string;
   const remainingEntriesStr = formData.get("remainingEntries") as string;
@@ -163,14 +164,14 @@ export async function updateMembership(
     include: { type: true },
   });
 
-  if (!existing) throw new Error("Nie znaleziono karnetu");
+  if (!existing) return actionError("Nie znaleziono karnetu");
 
   // Karnet po terminie (lub bez wejść) nie może zostać zapisany jako aktywny.
   if (
     status === "ACTIVE" &&
     isMembershipExpired({ endDate, remainingEntries, type: existing.type })
   ) {
-    throw new Error(
+    return actionError(
       "Karnet po terminie ważności lub bez pozostałych wejść nie może mieć statusu Aktywny. Zmień datę zakończenia / liczbę wejść albo ustaw status Wygasły.",
     );
   }
@@ -198,21 +199,24 @@ export async function updateMembership(
   return { success: true };
 }
 
-export async function sellMembership(memberId: string, formData: FormData) {
+export async function sellMembership(
+  memberId: string,
+  formData: FormData,
+): Promise<ActionResult> {
   const typeId = formData.get("typeId") as string;
   const startDateStr = formData.get("startDate") as string;
   const paymentMethod = formData.get("paymentMethod") as string;
   const discountStr = formData.get("discount") as string;
 
   if (!typeId || !startDateStr || !paymentMethod) {
-    throw new Error("Missing required fields");
+    return actionError("Uzupełnij wszystkie wymagane pola");
   }
 
   const membershipType = await prisma.membershipType.findUnique({
     where: { id: typeId },
   });
 
-  if (!membershipType) throw new Error("Invalid membership type");
+  if (!membershipType) return actionError("Wybrany typ karnetu nie istnieje");
 
   const startDate = new Date(startDateStr);
   let endDate: Date | null = null;

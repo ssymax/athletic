@@ -1,9 +1,9 @@
 "use client";
 
 import { updateUser } from "@/app/actions/users";
+import { useFormAction } from "@/hooks/useFormAction";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { useState } from "react";
 
 interface EditUserFormProps {
   user: {
@@ -15,17 +15,15 @@ interface EditUserFormProps {
 
 export default function EditUserForm({ user }: EditUserFormProps) {
   const router = useRouter();
-  const [error, setError] = useState<string | null>(null);
 
-  async function handleSubmit(formData: FormData) {
-    try {
-      await updateUser(user.id, formData);
+  const { error, submitDisabled, handleSubmit } = useFormAction({
+    action: (formData) => updateUser(user.id, formData),
+    onSuccess: () => {
       router.push("/admin/users");
       router.refresh();
-    } catch (e) {
-      setError(e instanceof Error ? e.message : "Nie udało się zapisać zmian");
-    }
-  }
+    },
+    fallbackError: "Nie udało się zapisać zmian. Spróbuj ponownie.",
+  });
 
   return (
     <div className="container mx-auto py-8 max-w-lg">
@@ -40,7 +38,7 @@ export default function EditUserForm({ user }: EditUserFormProps) {
       </div>
 
       <div className="card">
-        <form action={handleSubmit} className="space-y-4">
+        <form method="post" onSubmit={handleSubmit} className="space-y-4">
           {error && <div className="alert alert-error">{error}</div>}
 
           <div className="form-group">
@@ -89,7 +87,11 @@ export default function EditUserForm({ user }: EditUserFormProps) {
             <Link href="/admin/users" className="btn btn-secondary">
               Anuluj
             </Link>
-            <button type="submit" className="btn btn-primary">
+            <button
+              type="submit"
+              className="btn btn-primary"
+              disabled={submitDisabled}
+            >
               Zapisz zmiany
             </button>
           </div>

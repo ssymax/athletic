@@ -2,6 +2,7 @@
 
 import prisma from "@/lib/db";
 import { revalidatePath } from "next/cache";
+import { type ActionResult, actionError } from "@/lib/actionResult";
 
 interface CartItem {
   productId: string;
@@ -13,9 +14,9 @@ export async function processSale(
   items: CartItem[],
   paymentMethod: string,
   note?: string,
-) {
+): Promise<ActionResult> {
   if (items.length === 0) {
-    throw new Error("Cart is empty");
+    return actionError("Koszyk jest pusty");
   }
 
   const totalAmount = items.reduce(

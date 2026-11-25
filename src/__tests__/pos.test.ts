@@ -27,8 +27,11 @@ describe("processSale", () => {
     );
   });
 
-  it("throws when cart is empty", async () => {
-    await expect(processSale([], "CASH")).rejects.toThrow("Cart is empty");
+  it("returns an error when cart is empty", async () => {
+    await expect(processSale([], "CASH")).resolves.toEqual({
+      success: false,
+      error: "Koszyk jest pusty",
+    });
   });
 
   it("creates Sale record with correct totalAmount", async () => {

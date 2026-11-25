@@ -2,6 +2,11 @@
 
 import prisma from "@/lib/db";
 import { revalidatePath } from "next/cache";
+import {
+  type ActionResult,
+  actionError,
+  isUniqueConstraintError,
+} from "@/lib/actionResult";
 import { isMembershipValid } from "@/lib/memberships";
 import { expireOutdatedMemberships } from "@/app/actions/memberships";
 
@@ -46,6 +51,9 @@ function pickPrimaryMembershipForList(
     (a, b) => b.startDate.getTime() - a.startDate.getTime(),
   )[0];
 }
+
+const REQUIRED_FIELDS_ERROR = "Uzupełnij wszystkie wymagane pola";
+const DUPLICATE_PHONE_ERROR = "Klubowicz z tym numerem telefonu już istnieje";
 
 export async function getMembers(query?: string) {
   await expireOutdatedMemberships();
@@ -128,46 +136,63 @@ export async function getMembers(query?: string) {
   });
 }
 
-export async function createMember(formData: FormData) {
+export async function createMember(formData: FormData): Promise<ActionResult> {
   const firstName = formData.get("firstName") as string;
   const lastName = formData.get("lastName") as string;
   const phoneNumber = formData.get("phoneNumber") as string;
   const notes = formData.get("notes") as string;
 
   if (!firstName || !lastName || !phoneNumber) {
-    throw new Error("Please fill in all required fields");
+    return actionError(REQUIRED_FIELDS_ERROR);
   }
 
-  await prisma.member.create({
-    data: {
-      firstName,
-      lastName,
-      phoneNumber,
-      notes,
-    },
-  });
+  try {
+    await prisma.member.create({
+      data: {
+        firstName,
+        lastName,
+        phoneNumber,
+        notes,
+      },
+    });
+  } catch (error) {
+    if (isUniqueConstraintError(error)) {
+      return actionError(DUPLICATE_PHONE_ERROR);
+    }
+    throw error;
+  }
 
   revalidatePath("/members");
   return { success: true };
 }
 
-export async function updateMember(id: string, formData: FormData) {
+export async function updateMember(
+  id: string,
+  formData: FormData,
+): Promise<ActionResult> {
   const firstName = formData.get("firstName") as string;
   const lastName = formData.get("lastName") as string;
   const phoneNumber = formData.get("phoneNumber") as string;
   const notes = formData.get("notes") as string;
   const active = formData.get("active") === "on";
 
-  await prisma.member.update({
-    where: { id },
-    data: {
-      firstName,
-      lastName,
-      phoneNumber,
-      notes,
-      active,
-    },
-  });
+  try {
+    await prisma.member.update({
+      where: { id },
+      data: {
+        firstName,
+        lastName,
+        phoneNumber,
+        notes,
+        active,
+      },
+    });
+  } catch (error) {
+    if (isUniqueConstraintError(error)) {
+      return actionError(DUPLICATE_PHONE_ERROR);
+    }
+    throw error;
+  }
 
   revalidatePath("/members");
   return { success: true };

@@ -4,9 +4,20 @@ import prisma from "@/lib/db";
 import { revalidatePath } from "next/cache";
 import { auth } from "@/auth";
 import bcrypt from "bcryptjs";
+import {
+  type ActionResult,
+  actionError,
+  isUniqueConstraintError,
+} from "@/lib/actionResult";
 
 const VALID_ROLES = ["ADMIN", "RECEPTION"] as const;
 type UserRole = (typeof VALID_ROLES)[number];
+
+const USERNAME_REQUIRED_ERROR = "Login jest wymagany";
+const PASSWORD_REQUIRED_ERROR = "Hasło jest wymagane";
+const PASSWORD_TOO_SHORT_ERROR = "Hasło musi mieć minimum 6 znaków";
+const INVALID_ROLE_ERROR = "Nieprawidłowa rola użytkownika";
+const DUPLICATE_USERNAME_ERROR = "Użytkownik o takim loginie już istnieje";
 
 async function assertAdmin() {
   const session = await auth();
@@ -15,17 +26,8 @@ async function assertAdmin() {
   }
 }
 
-function parseRole(role: string): UserRole {
-  if (VALID_ROLES.includes(role as UserRole)) {
-    return role as UserRole;
-  }
-  throw new Error("Nieprawidłowa rola użytkownika");
-}
-
-function ensureNonEmpty(value: string, label: string) {
-  if (!value.trim()) {
-    throw new Error(`${label} jest wymagany`);
-  }
+function parseRole(role: string): UserRole | null {
+  return VALID_ROLES.find((validRole) => validRole === role) ?? null;
 }
 
 export async function getUsers() {
@@ -58,21 +60,20 @@ export async function getUserById(id: string) {
   });
 }
 
-export async function createUser(formData: FormData) {
+export async function createUser(formData: FormData): Promise<ActionResult> {
   await assertAdmin();
 
   const username = (formData.get("username") as string) || "";
   const password = (formData.get("password") as string) || "";
   const roleRaw = (formData.get("role") as string) || "";
 
-  ensureNonEmpty(username, "Login");
-  ensureNonEmpty(password, "Hasło");
-
-  if (password.length < 6) {
-    throw new Error("Hasło musi mieć minimum 6 znaków");
-  }
+  if (!username.trim()) return actionError(USERNAME_REQUIRED_ERROR);
+  if (!password.trim()) return actionError(PASSWORD_REQUIRED_ERROR);
+  if (password.length < 6) return actionError(PASSWORD_TOO_SHORT_ERROR);
 
   const role = parseRole(roleRaw);
+  if (!role) return actionError(INVALID_ROLE_ERROR);
+
   const hashedPassword = await bcrypt.hash(password, 10);
 
   try {
@@ -84,29 +85,30 @@ export async function createUser(formData: FormData) {
       },
     });
   } catch (error) {
-    if (
-      typeof error === "object" &&
-      error !== null &&
-      "code" in error &&
-      error.code === "P2002"
-    ) {
-      throw new Error("Użytkownik o takim loginie już istnieje");
+    if (isUniqueConstraintError(error)) {
+      return actionError(DUPLICATE_USERNAME_ERROR);
     }
     throw error;
   }
 
   revalidatePath("/admin/users");
+  return { success: true };
 }
 
-export async function updateUser(id: string, formData: FormData) {
+export async function updateUser(
+  id: string,
+  formData: FormData,
+): Promise<ActionResult> {
   await assertAdmin();
 
   const username = (formData.get("username") as string) || "";
   const password = (formData.get("password") as string) || "";
   const roleRaw = (formData.get("role") as string) || "";
 
-  ensureNonEmpty(username, "Login");
+  if (!username.trim()) return actionError(USERNAME_REQUIRED_ERROR);
+
   const role = parseRole(roleRaw);
+  if (!role) return actionError(INVALID_ROLE_ERROR);
 
   const data: {
     username: string;
@@ -118,9 +120,7 @@ export async function updateUser(id: string, formData: FormData) {
   };
 
   if (password.trim()) {
-    if (password.length < 6) {
-      throw new Error("Hasło musi mieć minimum 6 znaków");
-    }
+    if (password.length < 6) return actionError(PASSWORD_TOO_SHORT_ERROR);
     data.password = await bcrypt.hash(password, 10);
   }
 
@@ -130,17 +130,13 @@ export async function updateUser(id: string, formData: FormData) {
       data,
     });
   } catch (error) {
-    if (
-      typeof error === "object" &&
-      error !== null &&
-      "code" in error &&
-      error.code === "P2002"
-    ) {
-      throw new Error("Użytkownik o takim loginie już istnieje");
+    if (isUniqueConstraintError(error)) {
+      return actionError(DUPLICATE_USERNAME_ERROR);
     }
     throw error;
   }
 
   revalidatePath("/admin/users");
   revalidatePath(`/admin/users/${id}/edit`);
+  return { success: true };
 }

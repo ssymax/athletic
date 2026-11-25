@@ -2,6 +2,8 @@
 
 import { getMember } from "@/app/actions/members";
 import { getMembership, updateMembership } from "@/app/actions/memberships";
+import { useFormAction } from "@/hooks/useFormAction";
+import { actionError } from "@/lib/actionResult";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
@@ -9,6 +11,8 @@ import { useEffect, useState } from "react";
 type MembershipWithType = NonNullable<
   Awaited<ReturnType<typeof getMembership>>
 >;
+
+const SAVE_ERROR = "Nie udało się zapisać zmian. Spróbuj ponownie.";
 
 export default function EditMembershipPage({
   params,
@@ -18,7 +22,6 @@ export default function EditMembershipPage({
   const router = useRouter();
   const [membership, setMembership] = useState<MembershipWithType | null>(null);
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
   const [unwrappedParams, setUnwrappedParams] = useState<{
     id: string;
     membershipId: string;
@@ -36,20 +39,21 @@ export default function EditMembershipPage({
     });
   }, [unwrappedParams]);
 
-  async function handleSubmit(formData: FormData) {
-    if (!unwrappedParams || !membership) return;
-    try {
-      await updateMembership(
+  const { error, submitDisabled, handleSubmit } = useFormAction({
+    action: async (formData) => {
+      if (!unwrappedParams) return actionError(SAVE_ERROR);
+      return updateMembership(
         unwrappedParams.membershipId,
         unwrappedParams.id,
         formData,
       );
-      router.push(`/members/${unwrappedParams.id}`);
+    },
+    onSuccess: () => {
+      router.push(`/members/${unwrappedParams?.id}`);
       router.refresh();
-    } catch (e) {
-      setError(e instanceof Error ? e.message : "Something went wrong");
-    }
-  }
+    },
+    fallbackError: SAVE_ERROR,
+  });
 
   if (loading) return <div className="p-8 text-center">Ładowanie...</div>;
   if (!membership)
@@ -75,7 +79,7 @@ export default function EditMembershipPage({
           <p className="font-semibold text-lg">{membership.type.name}</p>
         </div>
 
-        <form action={handleSubmit} className="space-y-4">
+        <form method="post" onSubmit={handleSubmit} className="space-y-4">
           {error && <div className="alert alert-error">{error}</div>}
 
           <div className="form-group">
@@ -200,7 +204,11 @@ export default function EditMembershipPage({
             >
               Anuluj
             </Link>
-            <button type="submit" className="btn btn-primary">
+            <button
+              type="submit"
+              className="btn btn-primary"
+              disabled={submitDisabled}
+            >
               Zapisz zmiany
             </button>
           </div>
